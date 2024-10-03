@@ -1,11 +1,17 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-         pageEncoding="UTF-8"%>
-<!DOCTYPE html>
-<html>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<html lang="en">
 <head>
-  <title>DevSync</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello Page</title>
+    <style>
+        h1 {
+            color: brown;
+        }
+
+    </style>
 </head>
 <body>
-<h1>Welcome to DevSync!</h1>
+<h1>hi banta</h1>
 </body>
 </html>
