@@ -20,16 +20,7 @@ public class UserServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String pathInfo = request.getPathInfo();
         String action = request.getParameter("action");
-
-        // Handle root path
-        if (pathInfo == null || pathInfo.equals("/")) {
-            listUsers(request, response);
-            return;
-        }
-
-        // Handle other actions
         if (action == null) {
             action = "list";
         }
@@ -85,12 +76,12 @@ public class UserServlet extends HttpServlet {
             List<User> users = userService.getAllUsers();
             System.out.println("Number of users found: " + users.size());  // Log the number of users retrieved
             request.setAttribute("users", users);
-            request.getRequestDispatcher("/index.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/user/list.jsp").forward(request, response);
         } catch (Exception e) {
             log("Error retrieving user list: " + e.getMessage(), e);
             request.setAttribute("errorMessage", "Failed to retrieve user list. Please try again later.");
             request.setAttribute("users", List.of());  // Passing an empty list to prevent null pointer exceptions
-            request.getRequestDispatcher("/index.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/user/list.jsp").forward(request, response);
         }
     }
 
