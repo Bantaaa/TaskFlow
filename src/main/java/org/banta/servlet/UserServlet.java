@@ -20,20 +20,32 @@ public class UserServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        listUsers(request, response);
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String pathInfo = request.getPathInfo();
         String action = request.getParameter("action");
 
+        // Handle root path
+        if (pathInfo == null || pathInfo.equals("/")) {
+            listUsers(request, response);
+            return;
+        }
+
+        // Handle other actions
+        if (action == null) {
+            action = "list";
+        }
         try {
             switch (action) {
+                case "list":
+                    listUsers(request, response);
+                    break;
+                case "view":
+                    viewUser(request, response);
+                    break;
                 case "create":
-                    createUser(request, response);
+                    showCreateForm(request, response);
                     break;
                 case "edit":
-                    updateUser(request, response);
+                    showEditForm(request, response);
                     break;
                 case "delete":
                     deleteUser(request, response);
@@ -47,20 +59,87 @@ public class UserServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error: " + e.getMessage());
         }
     }
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String action = request.getParameter("action");
 
+        try {
+            switch (action) {
+                case "create":
+                    createUser(request, response);
+                    break;
+                case "edit":
+                    updateUser(request, response);
+                    break;
+                default:
+                    listUsers(request, response);
+                    break;
+            }
+        } catch (Exception e) {
+            log("Error processing POST request: " + e.getMessage(), e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error: " + e.getMessage());
+        }
+    }
     private void listUsers(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             List<User> users = userService.getAllUsers();
+            System.out.println("Number of users found: " + users.size());  // Log the number of users retrieved
             request.setAttribute("users", users);
             request.getRequestDispatcher("/index.jsp").forward(request, response);
         } catch (Exception e) {
             log("Error retrieving user list: " + e.getMessage(), e);
             request.setAttribute("errorMessage", "Failed to retrieve user list. Please try again later.");
-            request.setAttribute("users", List.of());
+            request.setAttribute("users", List.of());  // Passing an empty list to prevent null pointer exceptions
             request.getRequestDispatcher("/index.jsp").forward(request, response);
         }
     }
 
+
+    private void viewUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String idParam = request.getParameter("id");
+        if (idParam == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "User ID is required.");
+            return;
+        }
+
+        try {
+            Long id = Long.parseLong(idParam);
+            User user = userService.getUserById(id);
+            if (user != null) {
+                request.setAttribute("user", user);
+                request.getRequestDispatcher("/views/user/view.jsp").forward(request, response);
+            } else {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found.");
+            }
+        } catch (NumberFormatException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid User ID format.");
+        }
+    }
+
+    private void showCreateForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.getRequestDispatcher("/views/user/create.jsp").forward(request, response);
+    }
+
+    private void showEditForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String idParam = request.getParameter("id");
+        if (idParam == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "User ID is required.");
+            return;
+        }
+
+        try {
+            Long id = Long.parseLong(idParam);
+            User user = userService.getUserById(id);
+            if (user != null) {
+                request.setAttribute("user", user);
+                request.getRequestDispatcher("/views/user/edit.jsp").forward(request, response);
+            } else {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found.");
+            }
+        } catch (NumberFormatException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid User ID format.");
+        }
+    }
     private void createUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String username = request.getParameter("username");
         String email = request.getParameter("email");
@@ -73,9 +152,8 @@ public class UserServlet extends HttpServlet {
 
         User newUser = new User(username, password, email);
         userService.createUser(newUser);
-        response.sendRedirect(request.getContextPath() + "/user");
+        response.sendRedirect("user?action=list");
     }
-
     private void updateUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String idParam = request.getParameter("id");
         if (idParam == null) {
@@ -102,7 +180,7 @@ public class UserServlet extends HttpServlet {
                     user.setPassword(password);
                 }
                 userService.updateUser(user);
-                response.sendRedirect(request.getContextPath() + "/user");
+                response.sendRedirect("user?action=list");
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found.");
             }
@@ -113,19 +191,16 @@ public class UserServlet extends HttpServlet {
 
     private void deleteUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String idParam = request.getParameter("id");
-        if (idParam == null || idParam.isEmpty()) {
+        if (idParam == null) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "User ID is required.");
             return;
         }
         try {
             Long id = Long.parseLong(idParam);
             userService.deleteUser(id);
-            response.setStatus(HttpServletResponse.SC_OK);
+            response.sendRedirect("user?action=list");
         } catch (NumberFormatException e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid User ID format.");
-        } catch (Exception e) {
-            log("Error deleting user: " + e.getMessage(), e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error deleting user: " + e.getMessage());
         }
     }
 }
