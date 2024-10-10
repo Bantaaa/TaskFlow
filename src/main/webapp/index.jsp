@@ -8,7 +8,6 @@
     <title>Task and User Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         function openModal(modalId) {
             document.getElementById(modalId).classList.remove('hidden');
@@ -48,6 +47,16 @@
             const taskElement = document.getElementById(taskId);
             const targetColumn = event.target.closest('.task-column');
             if (targetColumn) {
+                // Remove existing status-based styles
+                taskElement.classList.remove('border-l-4', 'border-yellow-400', 'border-green-400');
+
+                // Add new status-based styles
+                if (status === 'IN_PROGRESS') {
+                    taskElement.classList.add('border-l-4', 'border-yellow-400');
+                } else if (status === 'DONE') {
+                    taskElement.classList.add('border-l-4', 'border-green-400');
+                }
+
                 targetColumn.querySelector('.task-list').appendChild(taskElement);
                 updateTaskStatus(taskId.split('-')[1], status);
             }
@@ -93,15 +102,15 @@
                                     <div class="flex items-center mt-2">
                                         <span class="ml-2 text-xs text-gray-500">Due: ${task.dueDate}</span>
                                     </div>
-                                    <div class="mt-2">
-                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}')" class="text-blue-500 hover:text-blue-700">
-                                            <i class="fas fa-edit"></i>
+                                    <div class="mt-2 flex space-x-2">
+                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm">
+                                            Edit
                                         </button>
                                         <form action="${pageContext.request.contextPath}/" method="post" style="display:inline;">
                                             <input type="hidden" name="action" value="deleteTask">
                                             <input type="hidden" name="id" value="${task.id}">
-                                            <button type="submit" class="text-red-500 hover:text-red-700 ml-2">
-                                                <i class="fas fa-trash-alt"></i>
+                                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-sm">
+                                                Delete
                                             </button>
                                         </form>
                                     </div>
@@ -123,15 +132,15 @@
                                     <div class="flex items-center mt-2">
                                         <span class="ml-2 text-xs text-gray-500">Due: ${task.dueDate}</span>
                                     </div>
-                                    <div class="mt-2">
-                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}')" class="text-blue-500 hover:text-blue-700">
-                                            <i class="fas fa-edit"></i>
+                                    <div class="mt-2 flex space-x-2">
+                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm">
+                                            Edit
                                         </button>
                                         <form action="${pageContext.request.contextPath}/" method="post" style="display:inline;">
                                             <input type="hidden" name="action" value="deleteTask">
                                             <input type="hidden" name="id" value="${task.id}">
-                                            <button type="submit" class="text-red-500 hover:text-red-700 ml-2">
-                                                <i class="fas fa-trash-alt"></i>
+                                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-sm">
+                                                Delete
                                             </button>
                                         </form>
                                     </div>
@@ -153,15 +162,15 @@
                                     <div class="flex items-center mt-2">
                                         <span class="ml-2 text-xs text-gray-500">Due: ${task.dueDate}</span>
                                     </div>
-                                    <div class="mt-2">
-                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}')" class="text-blue-500 hover:text-blue-700">
-                                            <i class="fas fa-edit"></i>
+                                    <div class="mt-2 flex space-x-2">
+                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm">
+                                            Edit
                                         </button>
                                         <form action="${pageContext.request.contextPath}/" method="post" style="display:inline;">
                                             <input type="hidden" name="action" value="deleteTask">
                                             <input type="hidden" name="id" value="${task.id}">
-                                            <button type="submit" class="text-red-500 hover:text-red-700 ml-2">
-                                                <i class="fas fa-trash-alt"></i>
+                                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-sm">
+                                                Delete
                                             </button>
                                         </form>
                                     </div>
@@ -189,15 +198,15 @@
                             <p class="font-medium">${user.username}</p>
                             <p class="text-sm text-gray-500">${user.email}</p>
                         </div>
-                        <div class="ml-auto">
-                            <button onclick="populateEditForm(${user.id}, '${user.username}', '${user.email}')" class="text-blue-500 hover:text-blue-700">
-                                <i class="fas fa-edit"></i>
+                        <div class="ml-auto flex space-x-2">
+                            <button onclick="populateEditForm(${user.id}, '${user.username}', '${user.email}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm">
+                                Edit
                             </button>
                             <form action="${pageContext.request.contextPath}/" method="post" style="display:inline;">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="${user.id}">
-                                <button type="submit" class="text-red-500 hover:text-red-700 ml-2">
-                                    <i class="fas fa-trash-alt"></i>
+                                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-sm">
+                                    Delete
                                 </button>
                             </form>
                         </div>
@@ -212,7 +221,6 @@
         </div>
     </div>
 </div>
-
     <!-- Create User Modal -->
     <div id="createModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
