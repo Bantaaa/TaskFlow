@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task and User Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         function openModal(modalId) {
@@ -15,10 +16,6 @@
 
         function closeModal(modalId) {
             document.getElementById(modalId).classList.add('hidden');
-        }
-
-        function submitForm(formId) {
-            document.getElementById(formId).submit();
         }
 
         function populateEditForm(id, username, email) {
@@ -37,44 +34,40 @@
             openModal('editTaskModal');
         }
 
-        function drag(ev) {
-            ev.dataTransfer.setData("text", ev.target.id);
+        function dragStart(event) {
+            event.dataTransfer.setData("text/plain", event.target.id);
         }
 
-        function allowDrop(ev) {
-            ev.preventDefault();
+        function dragOver(event) {
+            event.preventDefault();
         }
 
-        function drop(ev) {
-            ev.preventDefault();
-            var data = ev.dataTransfer.getData("text");
-            ev.target.closest('.task-column').appendChild(document.getElementById(data));
-
-            // Update task status
-            var taskId = data.split('-')[1];
-            var newStatus = ev.target.closest('.task-column').id;
-            updateTaskStatus(taskId, newStatus);
+        function drop(event, status) {
+            event.preventDefault();
+            const taskId = event.dataTransfer.getData("text");
+            const taskElement = document.getElementById(taskId);
+            const targetColumn = event.target.closest('.task-column');
+            if (targetColumn) {
+                targetColumn.querySelector('.task-list').appendChild(taskElement);
+                updateTaskStatus(taskId.split('-')[1], status);
+            }
         }
 
         function updateTaskStatus(taskId, newStatus) {
-            // Send AJAX request to update task status
-            fetch('${pageContext.request.contextPath}/', {
-                method: 'POST',
+            axios.post('${pageContext.request.contextPath}/', {
+                action: 'updateTaskStatus',
+                id: taskId,
+                status: newStatus
+            }, {
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `action=updateTaskStatus&id=${taskId}&status=${newStatus}`
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        console.log('Task status updated successfully');
-                    } else {
-                        console.error('Failed to update task status');
-                    }
+                .then(function (response) {
+                    console.log('Task status updated successfully');
                 })
-                .catch((error) => {
-                    console.error('Error:', error);
+                .catch(function (error) {
+                    console.error('Error updating task status:', error);
                 });
         }
     </script>
@@ -84,29 +77,33 @@
     <h1 class="text-3xl font-bold text-center mb-8 text-indigo-600">Task and User Dashboard</h1>
 
     <div class="space-y-8">
-        <!-- Tasks Section (Sprint Board Style) -->
+        <!-- Tasks Section (Sprint Board Style with Drag and Drop) -->
         <div class="bg-white rounded-lg shadow-md p-6">
             <h2 class="text-2xl font-semibold mb-4 text-indigo-800">Tasks</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- To Do Column -->
-                <div id="TODO" class="task-column bg-gray-100 p-4 rounded-lg" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <div class="bg-gray-100 p-4 rounded-lg task-column" ondragover="dragOver(event)" ondrop="drop(event, 'TODO')">
                     <h3 class="text-lg font-medium mb-4 text-gray-700">To Do</h3>
-                    <div class="space-y-3">
+                    <div class="space-y-3 task-list">
                         <c:forEach var="task" items="${tasks}">
                             <c:if test="${task.status == 'TODO'}">
-                                <div id="task-${task.id}" class="bg-white p-3 rounded shadow" draggable="true" ondragstart="drag(event)">
+                                <div id="task-${task.id}" class="bg-white p-3 rounded shadow" draggable="true" ondragstart="dragStart(event)">
                                     <h4 class="font-medium">${task.title}</h4>
                                     <p class="text-sm text-gray-600 mt-1">${task.description}</p>
-                                    <div class="flex items-center justify-between mt-2">
-                                        <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
-                                        <div>
-                                            <i onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}')" class="fas fa-edit text-blue-500 hover:text-blue-700 cursor-pointer mr-2"></i>
-                                            <i onclick="submitForm('deleteTask-${task.id}')" class="fas fa-trash-alt text-red-500 hover:text-red-700 cursor-pointer"></i>
-                                            <form id="deleteTask-${task.id}" action="${pageContext.request.contextPath}/" method="post" class="hidden">
-                                                <input type="hidden" name="action" value="deleteTask">
-                                                <input type="hidden" name="id" value="${task.id}">
-                                            </form>
-                                        </div>
+                                    <div class="flex items-center mt-2">
+                                        <span class="ml-2 text-xs text-gray-500">Due: ${task.dueDate}</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}')" class="text-blue-500 hover:text-blue-700">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <form action="${pageContext.request.contextPath}/" method="post" style="display:inline;">
+                                            <input type="hidden" name="action" value="deleteTask">
+                                            <input type="hidden" name="id" value="${task.id}">
+                                            <button type="submit" class="text-red-500 hover:text-red-700 ml-2">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </c:if>
@@ -115,24 +112,28 @@
                 </div>
 
                 <!-- In Progress Column -->
-                <div id="IN_PROGRESS" class="task-column bg-gray-100 p-4 rounded-lg" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <div class="bg-gray-100 p-4 rounded-lg task-column" ondragover="dragOver(event)" ondrop="drop(event, 'IN_PROGRESS')">
                     <h3 class="text-lg font-medium mb-4 text-gray-700">In Progress</h3>
-                    <div class="space-y-3">
+                    <div class="space-y-3 task-list">
                         <c:forEach var="task" items="${tasks}">
                             <c:if test="${task.status == 'IN_PROGRESS'}">
-                                <div id="task-${task.id}" class="bg-white p-3 rounded shadow border-l-4 border-yellow-400" draggable="true" ondragstart="drag(event)">
+                                <div id="task-${task.id}" class="bg-white p-3 rounded shadow border-l-4 border-yellow-400" draggable="true" ondragstart="dragStart(event)">
                                     <h4 class="font-medium">${task.title}</h4>
                                     <p class="text-sm text-gray-600 mt-1">${task.description}</p>
-                                    <div class="flex items-center justify-between mt-2">
-                                        <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
-                                        <div>
-                                            <i onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}')" class="fas fa-edit text-blue-500 hover:text-blue-700 cursor-pointer mr-2"></i>
-                                            <i onclick="submitForm('deleteTask-${task.id}')" class="fas fa-trash-alt text-red-500 hover:text-red-700 cursor-pointer"></i>
-                                            <form id="deleteTask-${task.id}" action="${pageContext.request.contextPath}/" method="post" class="hidden">
-                                                <input type="hidden" name="action" value="deleteTask">
-                                                <input type="hidden" name="id" value="${task.id}">
-                                            </form>
-                                        </div>
+                                    <div class="flex items-center mt-2">
+                                        <span class="ml-2 text-xs text-gray-500">Due: ${task.dueDate}</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}')" class="text-blue-500 hover:text-blue-700">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <form action="${pageContext.request.contextPath}/" method="post" style="display:inline;">
+                                            <input type="hidden" name="action" value="deleteTask">
+                                            <input type="hidden" name="id" value="${task.id}">
+                                            <button type="submit" class="text-red-500 hover:text-red-700 ml-2">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </c:if>
@@ -141,24 +142,28 @@
                 </div>
 
                 <!-- Done Column -->
-                <div id="DONE" class="task-column bg-gray-100 p-4 rounded-lg" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <div class="bg-gray-100 p-4 rounded-lg task-column" ondragover="dragOver(event)" ondrop="drop(event, 'DONE')">
                     <h3 class="text-lg font-medium mb-4 text-gray-700">Done</h3>
-                    <div class="space-y-3">
+                    <div class="space-y-3 task-list">
                         <c:forEach var="task" items="${tasks}">
                             <c:if test="${task.status == 'DONE'}">
-                                <div id="task-${task.id}" class="bg-white p-3 rounded shadow border-l-4 border-green-400" draggable="true" ondragstart="drag(event)">
+                                <div id="task-${task.id}" class="bg-white p-3 rounded shadow border-l-4 border-green-400" draggable="true" ondragstart="dragStart(event)">
                                     <h4 class="font-medium">${task.title}</h4>
                                     <p class="text-sm text-gray-600 mt-1">${task.description}</p>
-                                    <div class="flex items-center justify-between mt-2">
-                                        <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
-                                        <div>
-                                            <i onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}')" class="fas fa-edit text-blue-500 hover:text-blue-700 cursor-pointer mr-2"></i>
-                                            <i onclick="submitForm('deleteTask-${task.id}')" class="fas fa-trash-alt text-red-500 hover:text-red-700 cursor-pointer"></i>
-                                            <form id="deleteTask-${task.id}" action="${pageContext.request.contextPath}/" method="post" class="hidden">
-                                                <input type="hidden" name="action" value="deleteTask">
-                                                <input type="hidden" name="id" value="${task.id}">
-                                            </form>
-                                        </div>
+                                    <div class="flex items-center mt-2">
+                                        <span class="ml-2 text-xs text-gray-500">Due: ${task.dueDate}</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}')" class="text-blue-500 hover:text-blue-700">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <form action="${pageContext.request.contextPath}/" method="post" style="display:inline;">
+                                            <input type="hidden" name="action" value="deleteTask">
+                                            <input type="hidden" name="id" value="${task.id}">
+                                            <button type="submit" class="text-red-500 hover:text-red-700 ml-2">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </c:if>
@@ -185,11 +190,15 @@
                             <p class="text-sm text-gray-500">${user.email}</p>
                         </div>
                         <div class="ml-auto">
-                            <i onclick="populateEditForm(${user.id}, '${user.username}', '${user.email}')" class="fas fa-edit text-blue-500 hover:text-blue-700 cursor-pointer mr-2"></i>
-                            <i onclick="submitForm('deleteUser-${user.id}')" class="fas fa-trash-alt text-red-500 hover:text-red-700 cursor-pointer"></i>
-                            <form id="deleteUser-${user.id}" action="${pageContext.request.contextPath}/" method="post" class="hidden">
+                            <button onclick="populateEditForm(${user.id}, '${user.username}', '${user.email}')" class="text-blue-500 hover:text-blue-700">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <form action="${pageContext.request.contextPath}/" method="post" style="display:inline;">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="${user.id}">
+                                <button type="submit" class="text-red-500 hover:text-red-700 ml-2">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -203,9 +212,6 @@
         </div>
     </div>
 </div>
-
-<!-- ... -->
-
 
     <!-- Create User Modal -->
     <div id="createModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">

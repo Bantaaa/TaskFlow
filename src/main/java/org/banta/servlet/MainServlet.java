@@ -57,6 +57,9 @@ public class MainServlet extends HttpServlet {
                 case "deleteTask":
                     deleteTask(request, response);
                     break;
+                case "updateTaskStatus":
+                    updateTaskStatus(request, response);
+                    return; // Return here to avoid redirect for AJAX calls
                 default:
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid action");
                     return;
@@ -202,6 +205,35 @@ public class MainServlet extends HttpServlet {
             taskService.deleteTask(id);
         } catch (NumberFormatException e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid Task ID format.");
+        }
+    }
+
+    private void updateTaskStatus(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String idParam = request.getParameter("id");
+        String statusParam = request.getParameter("status");
+
+        if (idParam == null || statusParam == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Task ID and status are required.");
+            return;
+        }
+
+        try {
+            Long id = Long.parseLong(idParam);
+            Task.Status status = Task.Status.valueOf(statusParam);
+
+            Task task = taskService.getTaskById(id);
+            if (task != null) {
+                task.setStatus(status);
+                taskService.updateTask(task);
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write("Task status updated successfully");
+            } else {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Task not found.");
+            }
+        } catch (NumberFormatException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid Task ID format.");
+        } catch (IllegalArgumentException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid status.");
         }
     }
 }
