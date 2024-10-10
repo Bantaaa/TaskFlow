@@ -5,19 +5,20 @@
          version="5.0">
 
     <welcome-file-list>
-        <welcome-file>UserServlet</welcome-file>
+        <welcome-file>MainServlet</welcome-file>
     </welcome-file-list>
 
     <!-- Servlet Definition -->
     <servlet>
-        <servlet-name>UserServlet</servlet-name>
-        <servlet-class>org.banta.servlet.UserServlet</servlet-class>
+        <servlet-name>MainServlet</servlet-name>
+        <servlet-class>org.banta.servlet.MainServlet</servlet-class>
     </servlet>
 
     <!-- Servlet Mapping -->
     <servlet-mapping>
-        <servlet-name>UserServlet</servlet-name>
+        <servlet-name>MainServlet</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
+
 
 </web-app>
