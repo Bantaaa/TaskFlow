@@ -66,8 +66,6 @@ Current version: 1.0.0
 
 ## License
 
-[Include your license information here]
 
 ## Contact
 
-[Include contact information or links to project management tools]
