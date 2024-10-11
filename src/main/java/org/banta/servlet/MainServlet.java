@@ -6,13 +6,15 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.banta.model.User;
 import org.banta.model.Task;
-import org.banta.service.UserService;
+import org.banta.model.User;
 import org.banta.service.TaskService;
+import org.banta.service.UserService;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 @WebServlet("/")
@@ -39,19 +41,19 @@ public class MainServlet extends HttpServlet {
 
         try {
             switch (action) {
-                case "create":
+                case "createUser":
                     createUser(request, response);
                     break;
-                case "edit":
+                case "updateUser":
                     updateUser(request, response);
                     break;
-                case "delete":
+                case "deleteUser":
                     deleteUser(request, response);
                     break;
                 case "createTask":
                     createTask(request, response);
                     break;
-                case "editTask":
+                case "updateTask":
                     updateTask(request, response);
                     break;
                 case "deleteTask":
@@ -140,19 +142,37 @@ public class MainServlet extends HttpServlet {
         String description = request.getParameter("description");
         String dueDateStr = request.getParameter("dueDate");
         String statusStr = request.getParameter("status");
+        String tagsStr = request.getParameter("tags");
+        String assignedUserIdStr = request.getParameter("assignedUserId");
 
-        if (title == null || title.isEmpty() || dueDateStr == null || dueDateStr.isEmpty() || statusStr == null || statusStr.isEmpty()) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Title, due date, and status are required.");
+        if (title == null || title.isEmpty() || dueDateStr == null || dueDateStr.isEmpty() || statusStr == null || statusStr.isEmpty() || tagsStr == null || tagsStr.isEmpty()) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Title, due date, status, and tags are required.");
             return;
         }
 
         try {
             LocalDate dueDate = LocalDate.parse(dueDateStr);
             Task.Status status = Task.Status.valueOf(statusStr);
+            String[] tagArray = tagsStr.split(",");
+            if (tagArray.length < 2) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "At least two tags are required.");
+                return;
+            }
+
             Task newTask = new Task(title, description, dueDate, status);
+            newTask.setTags(new HashSet<>(Arrays.asList(tagArray)));
+
+            if (assignedUserIdStr != null && !assignedUserIdStr.isEmpty()) {
+                Long assignedUserId = Long.parseLong(assignedUserIdStr);
+                User assignedUser = userService.getUserById(assignedUserId);
+                if (assignedUser != null) {
+                    newTask.setAssignedUser(assignedUser);
+                }
+            }
+
             taskService.createTask(newTask);
         } catch (IllegalArgumentException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid date format or status.");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid input: " + e.getMessage());
         }
     }
 
@@ -169,9 +189,11 @@ public class MainServlet extends HttpServlet {
             String description = request.getParameter("description");
             String dueDateStr = request.getParameter("dueDate");
             String statusStr = request.getParameter("status");
+            String tagsStr = request.getParameter("tags");
+            String assignedUserIdStr = request.getParameter("assignedUserId");
 
-            if (title == null || title.isEmpty() || dueDateStr == null || dueDateStr.isEmpty() || statusStr == null || statusStr.isEmpty()) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Title, due date, and status are required.");
+            if (title == null || title.isEmpty() || dueDateStr == null || dueDateStr.isEmpty() || statusStr == null || statusStr.isEmpty() || tagsStr == null || tagsStr.isEmpty()) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Title, due date, status, and tags are required.");
                 return;
             }
 
@@ -179,10 +201,28 @@ public class MainServlet extends HttpServlet {
             if (task != null) {
                 LocalDate dueDate = LocalDate.parse(dueDateStr);
                 Task.Status status = Task.Status.valueOf(statusStr);
+                String[] tagArray = tagsStr.split(",");
+                if (tagArray.length < 2) {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "At least two tags are required.");
+                    return;
+                }
+
                 task.setTitle(title);
                 task.setDescription(description);
                 task.setDueDate(dueDate);
                 task.setStatus(status);
+                task.setTags(new HashSet<>(Arrays.asList(tagArray)));
+
+                if (assignedUserIdStr != null && !assignedUserIdStr.isEmpty()) {
+                    Long assignedUserId = Long.parseLong(assignedUserIdStr);
+                    User assignedUser = userService.getUserById(assignedUserId);
+                    if (assignedUser != null) {
+                        task.setAssignedUser(assignedUser);
+                    }
+                } else {
+                    task.setAssignedUser(null);
+                }
+
                 taskService.updateTask(task);
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Task not found.");
@@ -190,7 +230,7 @@ public class MainServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid Task ID format.");
         } catch (IllegalArgumentException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid date format or status.");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid input: " + e.getMessage());
         }
     }
 
