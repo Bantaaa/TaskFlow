@@ -64,8 +64,7 @@
                                                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                                             </svg>
                                         </button>
-                                        <form action="${pageContext.request.contextPath}/" method="post" class="inline-block">
-                                            <input type="hidden" name="action" value="deleteTask">
+                                        <form action="${pageContext.request.contextPath}/task/delete" method="post" class="inline-block">
                                             <input type="hidden" name="id" value="${task.id}">
                                             <button type="submit" class="text-red-500 hover:text-red-700 p-1">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -103,8 +102,7 @@
                                                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                                             </svg>
                                         </button>
-                                        <form action="${pageContext.request.contextPath}/" method="post" class="inline-block">
-                                            <input type="hidden" name="action" value="deleteTask">
+                                        <form action="${pageContext.request.contextPath}/task/delete" method="post" class="inline-block">
                                             <input type="hidden" name="id" value="${task.id}">
                                             <button type="submit" class="text-red-500 hover:text-red-700 p-1">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -142,8 +140,7 @@
                                                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                                             </svg>
                                         </button>
-                                        <form action="${pageContext.request.contextPath}/" method="post" class="inline-block">
-                                            <input type="hidden" name="action" value="deleteTask">
+                                        <form action="${pageContext.request.contextPath}/task/delete" method="post" class="inline-block">
                                             <input type="hidden" name="id" value="${task.id}">
                                             <button type="submit" class="text-red-500 hover:text-red-700 p-1">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -174,35 +171,33 @@
                 </button>
             </div>
         </div>
-
         <!-- Users Section -->
         <div class="bg-white rounded-lg shadow-md p-6">
             <h2 class="text-2xl font-semibold mb-4 text-indigo-800">Team Members</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <c:forEach var="user" items="${users}">
-                    <div class="bg-gray-50 p-4 rounded-lg flex items-center space-x-4 relative">
-                        <img src="https://assets.audiomack.com/mulero-elijah/67cd048368eb503188164eabfcfb65ea.jpeg" alt="${user.username}" class="w-12 h-12 rounded-full bg-gray-300">
-                        <div class="flex-grow">
-                            <p class="font-medium">${user.username}</p>
-                            <p class="text-sm text-gray-500">${user.email}</p>
-                        </div>
-                        <div class="flex items-center">
-                            <button onclick="populateEditForm(${user.id}, '${user.username}', '${user.email}')" class="text-blue-500 hover:text-blue-700 p-1">
+                <div class="bg-gray-50 p-4 rounded-lg flex items-center space-x-4 relative">
+                    <img src="https://assets.audiomack.com/mulero-elijah/67cd048368eb503188164eabfcfb65ea.jpeg" alt="${user.username}" class="w-12 h-12 rounded-full bg-gray-300">
+                    <div class="flex-grow">
+                        <p class="font-medium">${user.username}</p>
+                        <p class="text-sm text-gray-500">${user.email}</p>
+                    </div>
+                    <div class="flex items-center">
+                        <button onclick="populateEditForm(${user.id}, '${user.username}', '${user.email}')" class="text-blue-500 hover:text-blue-700 p-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                        </button>
+                        <form action="${pageContext.request.contextPath}/user/delete" method="post" class="inline-block">
+                            <input type="hidden" name="id" value="${user.id}">
+                            <button type="submit" class="text-red-500 hover:text-red-700 p-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
                                 </svg>
                             </button>
-                            <form action="${pageContext.request.contextPath}/" method="post" class="inline-block">
-                                <input type="hidden" name="action" value="deleteUser">
-                                <input type="hidden" name="id" value="${user.id}">
-                                <button type="submit" class="text-red-500 hover:text-red-700 p-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                    </svg>
-                                </button>
-                            </form>
-                        </div>
+                        </form>
                     </div>
+                </div>
                 </c:forEach>
             </div>
             <div class="mt-4">
@@ -213,73 +208,71 @@
         </div>
     </div>
 </div>
+
 <!-- Create User Modal -->
-    <div id="createModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <h3 class="text-lg font-bold mb-4">Create New User</h3>
-            <form id="createForm" action="${pageContext.request.contextPath}/" method="post">
-                <input type="hidden" name="action" value="create">
-                <div class="mb-4">
-                    <label for="username" class="block text-gray-700 text-sm font-bold mb-2">Username:</label>
-                    <input type="text" id="username" name="username" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                </div>
-                <div class="mb-4">
-                    <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
-                    <input type="email" id="email" name="email" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                </div>
-                <div class="mb-4">
-                    <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Password:</label>
-                    <input type="password" id="password" name="password" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                </div>
-                <div class="flex items-center justify-between">
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                        Create
-                    </button>
-                    <button type="button" onclick="closeModal('createModal')" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                        Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
+<div id="createModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <h3 class="text-lg font-bold mb-4">Create New User</h3>
+        <form id="createForm" action="${pageContext.request.contextPath}/user/create" method="post">
+            <div class="mb-4">
+                <label for="username" class="block text-gray-700 text-sm font-bold mb-2">Username:</label>
+                <input type="text" id="username" name="username" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="mb-4">
+                <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
+                <input type="email" id="email" name="email" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="mb-4">
+                <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Password:</label>
+                <input type="password" id="password" name="password" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="flex items-center justify-between">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Create
+                </button>
+                <button type="button" onclick="closeModal('createModal')" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Cancel
+                </button>
+            </div>
+        </form>
     </div>
+</div>
 
 <!-- Edit User Modal -->
-    <div id="editModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <h3 class="text-lg font-bold mb-4">Edit User</h3>
-            <form id="editForm" action="${pageContext.request.contextPath}/" method="post">
-                <input type="hidden" name="action" value="edit">
-                <input type="hidden" id="editId" name="id">
-                <div class="mb-4">
-                    <label for="editUsername" class="block text-gray-700 text-sm font-bold mb-2">Username:</label>
-                    <input type="text" id="editUsername" name="username" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                </div>
-                <div class="mb-4">
-                    <label for="editEmail" class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
-                    <input type="email" id="editEmail" name="email" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                </div>
-                <div class="mb-4">
-                    <label for="editPassword" class="block text-gray-700 text-sm font-bold mb-2">Password (leave blank to keep current):</label>
-                    <input type="password" id="editPassword" name="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                </div>
-                <div class="flex items-center justify-between">
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                        Update
-                    </button>
-                    <button type="button" onclick="closeModal('editModal')" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                        Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
+<div id="editModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <h3 class="text-lg font-bold mb-4">Edit User</h3>
+        <form id="editForm" action="${pageContext.request.contextPath}/user/update" method="post">
+            <input type="hidden" id="editId" name="id">
+            <div class="mb-4">
+                <label for="editUsername" class="block text-gray-700 text-sm font-bold mb-2">Username:</label>
+                <input type="text" id="editUsername" name="username" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="mb-4">
+                <label for="editEmail" class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
+                <input type="email" id="editEmail" name="email" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="mb-4">
+                <label for="editPassword" class="block text-gray-700 text-sm font-bold mb-2">Password (leave blank to keep current):</label>
+                <input type="password" id="editPassword" name="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="flex items-center justify-between">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Update
+                </button>
+                <button type="button" onclick="closeModal('editModal')" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Cancel
+                </button>
+            </div>
+        </form>
     </div>
+</div>
 
 <!-- Create Task Modal -->
 <div id="createTaskModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <h3 class="text-lg font-bold mb-4">Create New Task</h3>
-        <form id="createTaskForm" action="${pageContext.request.contextPath}/" method="post" onsubmit="return validateForm('createTaskForm')">
-            <input type="hidden" name="action" value="createTask">
+        <form id="createTaskForm" action="${pageContext.request.contextPath}/task/create" method="post" onsubmit="return validateForm('createTaskForm')">
             <div class="mb-4">
                 <label for="taskTitle" class="block text-gray-700 text-sm font-bold mb-2">Title:</label>
                 <input type="text" id="taskTitle" name="title" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
@@ -319,12 +312,11 @@
     </div>
 </div>
 
-<!-- Edit Task Modal (Continued) -->
+<!-- Edit Task Modal -->
 <div id="editTaskModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <h3 class="text-lg font-bold mb-4">Edit Task</h3>
-        <form id="editTaskForm" action="${pageContext.request.contextPath}/" method="post" onsubmit="return validateForm('editTaskForm')">
-            <input type="hidden" name="action" value="updateTask">
+        <form id="editTaskForm" action="${pageContext.request.contextPath}/task/update" method="post" onsubmit="return validateForm('editTaskForm')">
             <input type="hidden" id="editTaskId" name="id">
             <div class="mb-4">
                 <label for="editTaskTitle" class="block text-gray-700 text-sm font-bold mb-2">Title:</label>
@@ -501,7 +493,6 @@
 
     function dragOver(e) {
         e.preventDefault();
-        // console.log('Drag over');
     }
 
     function dragEnter(e) {
@@ -559,11 +550,10 @@
     function updateTaskStatus(taskId, newStatus) {
         console.log('Updating task status:', taskId, newStatus);
         const form = new FormData();
-        form.append('action', 'updateTaskStatus');
         form.append('id', taskId);
         form.append('status', newStatus);
 
-        axios.post('${pageContext.request.contextPath}/', form)
+        axios.post('${pageContext.request.contextPath}/task/updateStatus', form)
             .then(function (response) {
                 console.log('Task status updated successfully:', response.data);
             })
