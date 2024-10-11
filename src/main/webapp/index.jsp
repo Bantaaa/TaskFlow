@@ -8,78 +8,34 @@
     <title>Task and User Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script>
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.remove('hidden');
+    <style>
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
+        .tag {
+            border-radius: 9999px;
+            padding: 2px 8px;
+            margin: 2px;
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.75rem;
+            color: white;
         }
-
-        function populateEditForm(id, username, email) {
-            document.getElementById('editId').value = id;
-            document.getElementById('editUsername').value = username;
-            document.getElementById('editEmail').value = email;
-            openModal('editModal');
+        .tag-remove {
+            margin-left: 4px;
+            cursor: pointer;
         }
-
-        function populateEditTaskForm(id, title, description, dueDate, status, tags) {
-            document.getElementById('editTaskId').value = id;
-            document.getElementById('editTaskTitle').value = title;
-            document.getElementById('editTaskDescription').value = description;
-            document.getElementById('editTaskDueDate').value = dueDate;
-            document.getElementById('editTaskStatus').value = status;
-            document.getElementById('editTaskTags').value = tags;
-            openModal('editTaskModal');
+        .tag-input {
+            border: none;
+            outline: none;
+            flex-grow: 1;
+            padding: 5px;
         }
-
-        function dragStart(event) {
-            event.dataTransfer.setData("text/plain", event.target.id);
-        }
-
-        function dragOver(event) {
-            event.preventDefault();
-        }
-
-        function drop(event, status) {
-            event.preventDefault();
-            const taskId = event.dataTransfer.getData("text");
-            const taskElement = document.getElementById(taskId);
-            const targetColumn = event.target.closest('.task-column');
-            if (targetColumn) {
-                targetColumn.querySelector('.task-list').appendChild(taskElement);
-                updateTaskStatus(taskId.split('-')[1], status);
-            }
-        }
-
-        function updateTaskStatus(taskId, newStatus) {
-            axios.post('${pageContext.request.contextPath}/', {
-                action: 'updateTaskStatus',
-                id: taskId,
-                status: newStatus
-            }, {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            })
-                .then(function (response) {
-                    console.log('Task status updated successfully');
-                })
-                .catch(function (error) {
-                    console.error('Error updating task status:', error);
-                });
-        }
-
-        function validateTags(inputElement) {
-            const tags = inputElement.value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
-            if (tags.length < 2) {
-                inputElement.setCustomValidity('Please enter at least two tags');
-            } else {
-                inputElement.setCustomValidity('');
-            }
-        }
-    </script>
+    </style>
 </head>
 <body class="bg-gray-100">
 <div class="container mx-auto px-4 py-8">
@@ -102,8 +58,10 @@
                                     <div class="flex items-center mt-2">
                                         <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
                                     </div>
-                                    <div class="mt-2">
-                                        <span class="text-xs text-gray-500">Tags: ${task.tags}</span>
+                                    <div class="mt-2 flex flex-wrap" id="tags-${task.id}">
+                                        <c:forTokens items="${task.tags}" delims="," var="tag">
+                                            <span class="tag mr-2 mb-2">${tag}</span>
+                                        </c:forTokens>
                                     </div>
                                     <div class="mt-2 flex space-x-2">
                                         <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm">
@@ -135,8 +93,10 @@
                                     <div class="flex items-center mt-2">
                                         <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
                                     </div>
-                                    <div class="mt-2">
-                                        <span class="text-xs text-gray-500">Tags: ${task.tags}</span>
+                                    <div class="mt-2 flex flex-wrap" id="tags-${task.id}">
+                                        <c:forTokens items="${task.tags}" delims="," var="tag">
+                                            <span class="tag mr-2 mb-2">${tag}</span>
+                                        </c:forTokens>
                                     </div>
                                     <div class="mt-2 flex space-x-2">
                                         <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm">
@@ -168,8 +128,10 @@
                                     <div class="flex items-center mt-2">
                                         <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
                                     </div>
-                                    <div class="mt-2">
-                                        <span class="text-xs text-gray-500">Tags: ${task.tags}</span>
+                                    <div class="mt-2 flex flex-wrap" id="tags-${task.id}">
+                                        <c:forTokens items="${task.tags}" delims="," var="tag">
+                                            <span class="tag mr-2 mb-2">${tag}</span>
+                                        </c:forTokens>
                                     </div>
                                     <div class="mt-2 flex space-x-2">
                                         <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm">
@@ -318,9 +280,11 @@
                 </select>
             </div>
             <div class="mb-4">
-                <label for="taskTags" class="block text-gray-700 text-sm font-bold mb-2">Tags (comma-separated, at least 2):</label>
-                <input type="text" id="taskTags" name="tags" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" oninput="validateTags(this)">
-                <p id="tagError" class="text-red-500 text-xs italic hidden">Please enter at least two tags.</p>
+                <label for="taskTags" class="block text-gray-700 text-sm font-bold mb-2">Tags:</label>
+                <div id="taskTagContainer" class="tag-container">
+                    <input type="text" id="taskTags" class="tag-input" placeholder="Type and press space to add tags">
+                </div>
+                <input type="hidden" id="taskTagsHidden" name="tags" required>
             </div>
             <div class="flex items-center justify-between">
                 <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
@@ -334,7 +298,7 @@
     </div>
 </div>
 
-<!-- Edit Task Modal -->
+<!-- Edit Task Modal (Continued) -->
 <div id="editTaskModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <h3 class="text-lg font-bold mb-4">Edit Task</h3>
@@ -362,9 +326,11 @@
                 </select>
             </div>
             <div class="mb-4">
-                <label for="editTaskTags" class="block text-gray-700 text-sm font-bold mb-2">Tags (comma-separated, at least 2):</label>
-                <input type="text" id="editTaskTags" name="tags" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" oninput="validateTags(this)">
-                <p id="editTagError" class="text-red-500 text-xs italic hidden">Please enter at least two tags.</p>
+                <label for="editTaskTags" class="block text-gray-700 text-sm font-bold mb-2">Tags:</label>
+                <div id="editTaskTagContainer" class="tag-container">
+                    <input type="text" id="editTaskTags" class="tag-input" placeholder="Type and press space to add tags">
+                </div>
+                <input type="hidden" id="editTaskTagsHidden" name="tags" required>
             </div>
             <div class="flex items-center justify-between">
                 <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
@@ -379,20 +345,157 @@
 </div>
 
 <script>
-    function validateTags(input) {
-        const tags = input.value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
-        if (tags.length < 2) {
-            input.setCustomValidity('Please enter at least two tags');
-        } else {
-            input.setCustomValidity('');
+    function openModal(modalId) {
+        document.getElementById(modalId).classList.remove('hidden');
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.add('hidden');
+    }
+
+    function createTagInput(containerId, inputId, hiddenInputId) {
+        const container = document.getElementById(containerId);
+        const input = document.getElementById(inputId);
+        const hiddenInput = document.getElementById(hiddenInputId);
+        const tags = [];
+
+        function addTag(tag) {
+            if (!tags.includes(tag)) {
+                tags.push(tag);
+                updateTags();
+            }
         }
+
+        function removeTag(tag) {
+            const index = tags.indexOf(tag);
+            if (index > -1) {
+                tags.splice(index, 1);
+                updateTags();
+            }
+        }
+
+        function updateTags() {
+            container.innerHTML = '';
+            tags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.classList.add('tag', 'mr-2', 'mb-2');
+                tagElement.textContent = tag;
+                tagElement.style.backgroundColor = getRandomColor();
+                const removeButton = document.createElement('span');
+                removeButton.textContent = '×';
+                removeButton.classList.add('tag-remove');
+                removeButton.onclick = function() {
+                    removeTag(tag);
+                };
+                tagElement.appendChild(removeButton);
+                container.appendChild(tagElement);
+            });
+            container.appendChild(input);
+            hiddenInput.value = tags.join(',');
+        }
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                const tag = this.value.trim();
+                if (tag) {
+                    addTag(tag);
+                    this.value = '';
+                }
+            }
+        });
+
+        // Initialize tags if there are existing values
+        if (hiddenInput.value) {
+            hiddenInput.value.split(',').forEach(tag => addTag(tag.trim()));
+        }
+
+        return { addTag, removeTag, updateTags };
+    }
+
+    function getRandomColor() {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+    function updateTaskTags(taskId, tags) {
+        const tagContainer = document.getElementById(`tags-${taskId}`);
+        tagContainer.innerHTML = '';
+        tags.split(',').forEach(tag => {
+            const tagElement = document.createElement('span');
+            tagElement.classList.add('tag', 'mr-2', 'mb-2');
+            tagElement.textContent = tag.trim();
+            tagElement.style.backgroundColor = getRandomColor();
+            tagContainer.appendChild(tagElement);
+        });
+    }
+
+    function validateTags(inputId) {
+        const hiddenInput = document.getElementById(inputId);
+        const tags = hiddenInput.value.split(',').filter(tag => tag.trim() !== '');
+        return tags.length >= 2;
     }
 
     function validateForm(formId) {
         const form = document.getElementById(formId);
-        const tagsInput = form.querySelector('input[name="tags"]');
-        validateTags(tagsInput);
+        const tagsValid = validateTags(formId === 'createTaskForm' ? 'taskTagsHidden' : 'editTaskTagsHidden');
+        if (!tagsValid) {
+            alert('Please enter at least two tags.');
+            return false;
+        }
         return form.checkValidity();
+    }
+
+    function updateTaskStatus(taskId, newStatus) {
+        axios.post('${pageContext.request.contextPath}/', {
+            action: 'updateTaskStatus',
+            id: taskId,
+            status: newStatus
+        }, {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        })
+            .then(function (response) {
+                console.log('Task status updated successfully');
+                updateTaskColor(taskId, newStatus);
+            })
+            .catch(function (error) {
+                console.error('Error updating task status:', error);
+            });
+    }
+
+    function updateTaskColor(taskId, status) {
+        const taskElement = document.getElementById(`task-${taskId}`);
+        taskElement.classList.remove('border-l-4', 'border-yellow-400', 'border-green-400');
+        if (status === 'IN_PROGRESS') {
+            taskElement.classList.add('border-l-4', 'border-yellow-400');
+        } else if (status === 'DONE') {
+            taskElement.classList.add('border-l-4', 'border-green-400');
+        }
+    }
+
+    function dragStart(event) {
+        event.dataTransfer.setData("text/plain", event.target.id);
+    }
+
+    function dragOver(event) {
+        event.preventDefault();
+    }
+
+    function drop(event, status) {
+        event.preventDefault();
+        const taskId = event.dataTransfer.getData("text").split('-')[1];
+        const taskElement = document.getElementById(`task-${taskId}`);
+        const targetColumn = event.target.closest('.task-column');
+        if (targetColumn) {
+            targetColumn.querySelector('.task-list').appendChild(taskElement);
+            updateTaskStatus(taskId, status);
+        }
     }
 
     function populateEditTaskForm(id, title, description, dueDate, status, tags) {
@@ -401,9 +504,39 @@
         document.getElementById('editTaskDescription').value = description;
         document.getElementById('editTaskDueDate').value = dueDate;
         document.getElementById('editTaskStatus').value = status;
-        document.getElementById('editTaskTags').value = tags;
+
+        const editTagInput = createTagInput('editTaskTagContainer', 'editTaskTags', 'editTaskTagsHidden');
+        document.getElementById('editTaskTagsHidden').value = tags;
+        tags.split(',').forEach(tag => editTagInput.addTag(tag.trim()));
+
         openModal('editTaskModal');
     }
+
+    function populateEditForm(id, username, email) {
+        document.getElementById('editId').value = id;
+        document.getElementById('editUsername').value = username;
+        document.getElementById('editEmail').value = email;
+        openModal('editModal');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        createTagInput('taskTagContainer', 'taskTags', 'taskTagsHidden');
+        createTagInput('editTaskTagContainer', 'editTaskTags', 'editTaskTagsHidden');
+
+        // Color all existing tags
+        document.querySelectorAll('.tag').forEach(tag => {
+            tag.style.backgroundColor = getRandomColor();
+        });
+
+        // Add drag and drop event listeners
+        document.querySelectorAll('.task-column').forEach(column => {
+            column.addEventListener('dragover', dragOver);
+            column.addEventListener('drop', function(event) {
+                const status = this.querySelector('h3').textContent.trim().toUpperCase().replace(' ', '_');
+                drop(event, status);
+            });
+        });
+    });
 </script>
 </body>
 </html>
