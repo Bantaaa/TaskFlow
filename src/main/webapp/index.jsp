@@ -24,12 +24,13 @@
             openModal('editModal');
         }
 
-        function populateEditTaskForm(id, title, description, dueDate, status) {
+        function populateEditTaskForm(id, title, description, dueDate, status, tags) {
             document.getElementById('editTaskId').value = id;
             document.getElementById('editTaskTitle').value = title;
             document.getElementById('editTaskDescription').value = description;
             document.getElementById('editTaskDueDate').value = dueDate;
             document.getElementById('editTaskStatus').value = status;
+            document.getElementById('editTaskTags').value = tags;
             openModal('editTaskModal');
         }
 
@@ -47,16 +48,6 @@
             const taskElement = document.getElementById(taskId);
             const targetColumn = event.target.closest('.task-column');
             if (targetColumn) {
-                // Remove existing status-based styles
-                taskElement.classList.remove('border-l-4', 'border-yellow-400', 'border-green-400');
-
-                // Add new status-based styles
-                if (status === 'IN_PROGRESS') {
-                    taskElement.classList.add('border-l-4', 'border-yellow-400');
-                } else if (status === 'DONE') {
-                    taskElement.classList.add('border-l-4', 'border-green-400');
-                }
-
                 targetColumn.querySelector('.task-list').appendChild(taskElement);
                 updateTaskStatus(taskId.split('-')[1], status);
             }
@@ -79,6 +70,15 @@
                     console.error('Error updating task status:', error);
                 });
         }
+
+        function validateTags(inputElement) {
+            const tags = inputElement.value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+            if (tags.length < 2) {
+                inputElement.setCustomValidity('Please enter at least two tags');
+            } else {
+                inputElement.setCustomValidity('');
+            }
+        }
     </script>
 </head>
 <body class="bg-gray-100">
@@ -100,10 +100,13 @@
                                     <h4 class="font-medium">${task.title}</h4>
                                     <p class="text-sm text-gray-600 mt-1">${task.description}</p>
                                     <div class="flex items-center mt-2">
-                                        <span class="ml-2 text-xs text-gray-500">Due: ${task.dueDate}</span>
+                                        <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <span class="text-xs text-gray-500">Tags: ${task.tags}</span>
                                     </div>
                                     <div class="mt-2 flex space-x-2">
-                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm">
+                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm">
                                             Edit
                                         </button>
                                         <form action="${pageContext.request.contextPath}/" method="post" style="display:inline;">
@@ -130,10 +133,13 @@
                                     <h4 class="font-medium">${task.title}</h4>
                                     <p class="text-sm text-gray-600 mt-1">${task.description}</p>
                                     <div class="flex items-center mt-2">
-                                        <span class="ml-2 text-xs text-gray-500">Due: ${task.dueDate}</span>
+                                        <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <span class="text-xs text-gray-500">Tags: ${task.tags}</span>
                                     </div>
                                     <div class="mt-2 flex space-x-2">
-                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm">
+                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm">
                                             Edit
                                         </button>
                                         <form action="${pageContext.request.contextPath}/" method="post" style="display:inline;">
@@ -160,10 +166,13 @@
                                     <h4 class="font-medium">${task.title}</h4>
                                     <p class="text-sm text-gray-600 mt-1">${task.description}</p>
                                     <div class="flex items-center mt-2">
-                                        <span class="ml-2 text-xs text-gray-500">Due: ${task.dueDate}</span>
+                                        <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <span class="text-xs text-gray-500">Tags: ${task.tags}</span>
                                     </div>
                                     <div class="mt-2 flex space-x-2">
-                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm">
+                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm">
                                             Edit
                                         </button>
                                         <form action="${pageContext.request.contextPath}/" method="post" style="display:inline;">
@@ -203,7 +212,7 @@
                                 Edit
                             </button>
                             <form action="${pageContext.request.contextPath}/" method="post" style="display:inline;">
-                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="action" value="deleteUser">
                                 <input type="hidden" name="id" value="${user.id}">
                                 <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-sm">
                                     Delete
@@ -282,82 +291,119 @@
         </div>
     </div>
 
-    <!-- Create Task Modal -->
-    <div id="createTaskModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <h3 class="text-lg font-bold mb-4">Create New Task</h3>
-            <form id="createTaskForm" action="${pageContext.request.contextPath}/" method="post">
-                <input type="hidden" name="action" value="createTask">
-                <div class="mb-4">
-                    <label for="taskTitle" class="block text-gray-700 text-sm font-bold mb-2">Title:</label>
-                    <input type="text" id="taskTitle" name="title" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                </div>
-                <div class="mb-4">
-                    <label for="taskDescription" class="block text-gray-700 text-sm font-bold mb-2">Description:</label>
-                    <textarea id="taskDescription" name="description" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="3"></textarea>
-                </div>
-                <div class="mb-4">
-                    <label for="taskDueDate" class="block text-gray-700 text-sm font-bold mb-2">Due Date:</label>
-                    <input type="date" id="taskDueDate" name="dueDate" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                </div>
-                <div class="mb-4">
-                    <label for="taskStatus" class="block text-gray-700 text-sm font-bold mb-2">Status:</label>
-                    <select id="taskStatus" name="status" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <option value="TODO">To Do</option>
-                        <option value="IN_PROGRESS">In Progress</option>
-                        <option value="DONE">Done</option>
-                    </select>
-                </div>
-                <div class="flex items-center justify-between">
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                        Create
-                    </button>
-                    <button type="button" onclick="closeModal('createTaskModal')" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                        Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Edit Task Modal -->
-    <div id="editTaskModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <h3 class="text-lg font-bold mb-4">Edit Task</h3>
-            <form id="editTaskForm" action="${pageContext.request.contextPath}/" method="post">
-                <input type="hidden" name="action" value="editTask">
-                <input type="hidden" id="editTaskId" name="id">
-                <div class="mb-4">
-                    <label for="editTaskTitle" class="block text-gray-700 text-sm font-bold mb-2">Title:</label>
-                    <input type="text" id="editTaskTitle" name="title" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                </div>
-                <div class="mb-4">
-                    <label for="editTaskDescription" class="block text-gray-700 text-sm font-bold mb-2">Description:</label>
-                    <textarea id="editTaskDescription" name="description" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="3"></textarea>
-                </div>
-                <div class="mb-4">
-                    <label for="editTaskDueDate" class="block text-gray-700 text-sm font-bold mb-2">Due Date:</label>
-                    <input type="date" id="editTaskDueDate" name="dueDate" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                </div>
-                <div class="mb-4">
-                    <label for="editTaskStatus" class="block text-gray-700 text-sm font-bold mb-2">Status:</label>
-                    <select id="editTaskStatus" name="status" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <option value="TODO">To Do</option>
-                        <option value="IN_PROGRESS">In Progress</option>
-                        <option value="DONE">Done</option>
-                    </select>
-                </div>
-                <div class="flex items-center justify-between">
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                        Update
-                    </button>
-                    <button type="button" onclick="closeModal('editTaskModal')" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                        Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
+<!-- Create Task Modal -->
+<div id="createTaskModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <h3 class="text-lg font-bold mb-4">Create New Task</h3>
+        <form id="createTaskForm" action="${pageContext.request.contextPath}/" method="post" onsubmit="return validateForm('createTaskForm')">
+            <input type="hidden" name="action" value="createTask">
+            <div class="mb-4">
+                <label for="taskTitle" class="block text-gray-700 text-sm font-bold mb-2">Title:</label>
+                <input type="text" id="taskTitle" name="title" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="mb-4">
+                <label for="taskDescription" class="block text-gray-700 text-sm font-bold mb-2">Description:</label>
+                <textarea id="taskDescription" name="description" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="3"></textarea>
+            </div>
+            <div class="mb-4">
+                <label for="taskDueDate" class="block text-gray-700 text-sm font-bold mb-2">Due Date:</label>
+                <input type="date" id="taskDueDate" name="dueDate" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="mb-4">
+                <label for="taskStatus" class="block text-gray-700 text-sm font-bold mb-2">Status:</label>
+                <select id="taskStatus" name="status" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="TODO">To Do</option>
+                    <option value="IN_PROGRESS">In Progress</option>
+                    <option value="DONE">Done</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="taskTags" class="block text-gray-700 text-sm font-bold mb-2">Tags (comma-separated, at least 2):</label>
+                <input type="text" id="taskTags" name="tags" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" oninput="validateTags(this)">
+                <p id="tagError" class="text-red-500 text-xs italic hidden">Please enter at least two tags.</p>
+            </div>
+            <div class="flex items-center justify-between">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Create
+                </button>
+                <button type="button" onclick="closeModal('createTaskModal')" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Cancel
+                </button>
+            </div>
+        </form>
     </div>
 </div>
+
+<!-- Edit Task Modal -->
+<div id="editTaskModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <h3 class="text-lg font-bold mb-4">Edit Task</h3>
+        <form id="editTaskForm" action="${pageContext.request.contextPath}/" method="post" onsubmit="return validateForm('editTaskForm')">
+            <input type="hidden" name="action" value="updateTask">
+            <input type="hidden" id="editTaskId" name="id">
+            <div class="mb-4">
+                <label for="editTaskTitle" class="block text-gray-700 text-sm font-bold mb-2">Title:</label>
+                <input type="text" id="editTaskTitle" name="title" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="mb-4">
+                <label for="editTaskDescription" class="block text-gray-700 text-sm font-bold mb-2">Description:</label>
+                <textarea id="editTaskDescription" name="description" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="3"></textarea>
+            </div>
+            <div class="mb-4">
+                <label for="editTaskDueDate" class="block text-gray-700 text-sm font-bold mb-2">Due Date:</label>
+                <input type="date" id="editTaskDueDate" name="dueDate" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="mb-4">
+                <label for="editTaskStatus" class="block text-gray-700 text-sm font-bold mb-2">Status:</label>
+                <select id="editTaskStatus" name="status" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="TODO">To Do</option>
+                    <option value="IN_PROGRESS">In Progress</option>
+                    <option value="DONE">Done</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="editTaskTags" class="block text-gray-700 text-sm font-bold mb-2">Tags (comma-separated, at least 2):</label>
+                <input type="text" id="editTaskTags" name="tags" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" oninput="validateTags(this)">
+                <p id="editTagError" class="text-red-500 text-xs italic hidden">Please enter at least two tags.</p>
+            </div>
+            <div class="flex items-center justify-between">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Update
+                </button>
+                <button type="button" onclick="closeModal('editTaskModal')" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function validateTags(input) {
+        const tags = input.value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+        if (tags.length < 2) {
+            input.setCustomValidity('Please enter at least two tags');
+        } else {
+            input.setCustomValidity('');
+        }
+    }
+
+    function validateForm(formId) {
+        const form = document.getElementById(formId);
+        const tagsInput = form.querySelector('input[name="tags"]');
+        validateTags(tagsInput);
+        return form.checkValidity();
+    }
+
+    function populateEditTaskForm(id, title, description, dueDate, status, tags) {
+        document.getElementById('editTaskId').value = id;
+        document.getElementById('editTaskTitle').value = title;
+        document.getElementById('editTaskDescription').value = description;
+        document.getElementById('editTaskDueDate').value = dueDate;
+        document.getElementById('editTaskStatus').value = status;
+        document.getElementById('editTaskTags').value = tags;
+        openModal('editTaskModal');
+    }
+</script>
 </body>
 </html>

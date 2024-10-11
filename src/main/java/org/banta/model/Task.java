@@ -1,11 +1,14 @@
 package org.banta.model;
 
 import jakarta.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "tasks")
-public class Task {
+public class Task implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,14 +17,24 @@ public class Task {
     @Column(nullable = false)
     private String title;
 
-    @Column(length = 1000)
+    @Column
     private String description;
 
     @Column(nullable = false)
     private LocalDate dueDate;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Status status;
+
+    @ElementCollection
+    @CollectionTable(name = "task_tags", joinColumns = @JoinColumn(name = "task_id"))
+    @Column(name = "tag")
+    private Set<String> tags = new HashSet<>();
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User assignedUser;
 
     public enum Status {
         TODO, IN_PROGRESS, DONE
@@ -76,5 +89,43 @@ public class Task {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public Set<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(Set<String> tags) {
+        this.tags = tags;
+    }
+
+    public void addTag(String tag) {
+        this.tags.add(tag);
+    }
+
+    public void removeTag(String tag) {
+        this.tags.remove(tag);
+    }
+
+    public User getAssignedUser() {
+        return assignedUser;
+    }
+
+    public void setAssignedUser(User assignedUser) {
+        this.assignedUser = assignedUser;
+    }
+
+    // toString method for debugging
+    @Override
+    public String toString() {
+        return "Task{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", dueDate=" + dueDate +
+                ", status=" + status +
+                ", tags=" + tags +
+                ", assignedUser=" + (assignedUser != null ? assignedUser.getUsername() : "null") +
+                '}';
     }
 }
