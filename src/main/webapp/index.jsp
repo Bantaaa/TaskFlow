@@ -57,8 +57,24 @@
                     <div class="space-y-3 task-list">
                         <c:forEach var="task" items="${tasks}">
                             <c:if test="${task.status == 'TODO'}">
-                                <div id="task-${task.id}" class="bg-white p-3 rounded shadow" draggable="true">
-                                    <h4 class="font-medium">${task.title}</h4>
+                                <div id="task-${task.id}" class="bg-white p-3 rounded shadow relative" draggable="true">
+                                    <div class="absolute top-2 right-2 flex items-center">
+                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}')" class="text-blue-500 hover:text-blue-700 p-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                            </svg>
+                                        </button>
+                                        <form action="${pageContext.request.contextPath}/" method="post" class="inline-block">
+                                            <input type="hidden" name="action" value="deleteTask">
+                                            <input type="hidden" name="id" value="${task.id}">
+                                            <button type="submit" class="text-red-500 hover:text-red-700 p-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <h4 class="font-medium pr-14">${task.title}</h4>
                                     <p class="text-sm text-gray-600 mt-1">${task.description}</p>
                                     <div class="flex items-center mt-2">
                                         <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
@@ -67,18 +83,6 @@
                                         <c:forEach var="tag" items="${task.tags}">
                                             <span class="tag mr-2 mb-2">${tag}</span>
                                         </c:forEach>
-                                    </div>
-                                    <div class="mt-2 flex space-x-2">
-                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm">
-                                            Edit
-                                        </button>
-                                        <form action="${pageContext.request.contextPath}/" method="post" style="display:inline;">
-                                            <input type="hidden" name="action" value="deleteTask">
-                                            <input type="hidden" name="id" value="${task.id}">
-                                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-sm">
-                                                Delete
-                                            </button>
-                                        </form>
                                     </div>
                                 </div>
                             </c:if>
@@ -92,8 +96,24 @@
                     <div class="space-y-3 task-list">
                         <c:forEach var="task" items="${tasks}">
                             <c:if test="${task.status == 'IN_PROGRESS'}">
-                                <div id="task-${task.id}" class="bg-white p-3 rounded shadow border-l-4 border-yellow-400" draggable="true">
-                                    <h4 class="font-medium">${task.title}</h4>
+                                <div id="task-${task.id}" class="bg-white p-3 rounded shadow relative border-l-4 border-yellow-400" draggable="true">
+                                    <div class="absolute top-2 right-2 flex items-center">
+                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}')" class="text-blue-500 hover:text-blue-700 p-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                            </svg>
+                                        </button>
+                                        <form action="${pageContext.request.contextPath}/" method="post" class="inline-block">
+                                            <input type="hidden" name="action" value="deleteTask">
+                                            <input type="hidden" name="id" value="${task.id}">
+                                            <button type="submit" class="text-red-500 hover:text-red-700 p-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <h4 class="font-medium pr-14">${task.title}</h4>
                                     <p class="text-sm text-gray-600 mt-1">${task.description}</p>
                                     <div class="flex items-center mt-2">
                                         <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
@@ -102,18 +122,6 @@
                                         <c:forEach var="tag" items="${task.tags}">
                                             <span class="tag mr-2 mb-2">${tag}</span>
                                         </c:forEach>
-                                    </div>
-                                    <div class="mt-2 flex space-x-2">
-                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm">
-                                            Edit
-                                        </button>
-                                        <form action="${pageContext.request.contextPath}/" method="post" style="display:inline;">
-                                            <input type="hidden" name="action" value="deleteTask">
-                                            <input type="hidden" name="id" value="${task.id}">
-                                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-sm">
-                                                Delete
-                                            </button>
-                                        </form>
                                     </div>
                                 </div>
                             </c:if>
@@ -127,8 +135,24 @@
                     <div class="space-y-3 task-list">
                         <c:forEach var="task" items="${tasks}">
                             <c:if test="${task.status == 'DONE'}">
-                                <div id="task-${task.id}" class="bg-white p-3 rounded shadow border-l-4 border-green-400" draggable="true">
-                                    <h4 class="font-medium">${task.title}</h4>
+                                <div id="task-${task.id}" class="bg-white p-3 rounded shadow relative border-l-4 border-green-400" draggable="true">
+                                    <div class="absolute top-2 right-2 flex items-center">
+                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}')" class="text-blue-500 hover:text-blue-700 p-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                            </svg>
+                                        </button>
+                                        <form action="${pageContext.request.contextPath}/" method="post" class="inline-block">
+                                            <input type="hidden" name="action" value="deleteTask">
+                                            <input type="hidden" name="id" value="${task.id}">
+                                            <button type="submit" class="text-red-500 hover:text-red-700 p-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <h4 class="font-medium pr-14">${task.title}</h4>
                                     <p class="text-sm text-gray-600 mt-1">${task.description}</p>
                                     <div class="flex items-center mt-2">
                                         <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
@@ -137,18 +161,6 @@
                                         <c:forEach var="tag" items="${task.tags}">
                                             <span class="tag mr-2 mb-2">${tag}</span>
                                         </c:forEach>
-                                    </div>
-                                    <div class="mt-2 flex space-x-2">
-                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm">
-                                            Edit
-                                        </button>
-                                        <form action="${pageContext.request.contextPath}/" method="post" style="display:inline;">
-                                            <input type="hidden" name="action" value="deleteTask">
-                                            <input type="hidden" name="id" value="${task.id}">
-                                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-sm">
-                                                Delete
-                                            </button>
-                                        </form>
                                     </div>
                                 </div>
                             </c:if>
@@ -168,21 +180,25 @@
             <h2 class="text-2xl font-semibold mb-4 text-indigo-800">Team Members</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <c:forEach var="user" items="${users}">
-                    <div class="bg-gray-50 p-4 rounded-lg flex items-center space-x-4">
+                    <div class="bg-gray-50 p-4 rounded-lg flex items-center space-x-4 relative">
                         <img src="https://assets.audiomack.com/mulero-elijah/67cd048368eb503188164eabfcfb65ea.jpeg" alt="${user.username}" class="w-12 h-12 rounded-full bg-gray-300">
-                        <div>
+                        <div class="flex-grow">
                             <p class="font-medium">${user.username}</p>
                             <p class="text-sm text-gray-500">${user.email}</p>
                         </div>
-                        <div class="ml-auto flex space-x-2">
-                            <button onclick="populateEditForm(${user.id}, '${user.username}', '${user.email}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm">
-                                Edit
+                        <div class="flex items-center">
+                            <button onclick="populateEditForm(${user.id}, '${user.username}', '${user.email}')" class="text-blue-500 hover:text-blue-700 p-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                </svg>
                             </button>
-                            <form action="${pageContext.request.contextPath}/" method="post" style="display:inline;">
+                            <form action="${pageContext.request.contextPath}/" method="post" class="inline-block">
                                 <input type="hidden" name="action" value="deleteUser">
                                 <input type="hidden" name="id" value="${user.id}">
-                                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-sm">
-                                    Delete
+                                <button type="submit" class="text-red-500 hover:text-red-700 p-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
                                 </button>
                             </form>
                         </div>
