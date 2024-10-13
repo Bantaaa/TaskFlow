@@ -43,6 +43,15 @@
     </style>
 </head>
 <body class="bg-gray-100">
+<div class="bg-indigo-600 text-white p-4">
+    <div class="container mx-auto flex justify-between items-center">
+        <h1 class="text-2xl font-bold">Task Manager Dashboard</h1>
+        <div class="flex items-center">
+            <span class="mr-4">Welcome, ${sessionScope.user.username}</span>
+            <a href="${pageContext.request.contextPath}/logout" class="bg-white text-indigo-600 px-4 py-2 rounded hover:bg-indigo-100">Logout</a>
+        </div>
+    </div>
+</div>
 <div class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold text-center mb-8 text-indigo-600">Task and User Dashboard</h1>
 
@@ -57,9 +66,9 @@
                     <div class="space-y-3 task-list">
                         <c:forEach var="task" items="${tasks}">
                             <c:if test="${task.status == 'TODO'}">
-                                <div id="task-${task.id}" class="bg-white p-3 rounded shadow relative" draggable="true">
+                                <div id="task-${task.id}" class="bg-white p-3 rounded shadow relative" draggable="true" data-assigned-user-id="${task.assignedUser.id}">
                                     <div class="absolute top-2 right-2 flex items-center">
-                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}')" class="text-blue-500 hover:text-blue-700 p-1">
+                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}', '${task.assignedUser.id}')" class="text-blue-500 hover:text-blue-700 p-1">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                                             </svg>
@@ -78,6 +87,7 @@
                                     <div class="flex items-center mt-2">
                                         <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
                                     </div>
+                                    <span class="text-xs text-gray-500 ml-2">Assigned to: ${task.assignedUser.username}</span>
                                     <div class="mt-2 flex flex-wrap" id="tags-${task.id}">
                                         <c:forEach var="tag" items="${task.tags}">
                                             <span class="tag mr-2 mb-2">${tag}</span>
@@ -97,7 +107,7 @@
                             <c:if test="${task.status == 'IN_PROGRESS'}">
                                 <div id="task-${task.id}" class="bg-white p-3 rounded shadow relative border-l-4 border-yellow-400" draggable="true">
                                     <div class="absolute top-2 right-2 flex items-center">
-                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}')" class="text-blue-500 hover:text-blue-700 p-1">
+                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}', '${task.assignedUser.id}')" class="text-blue-500 hover:text-blue-700 p-1">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                                             </svg>
@@ -116,6 +126,7 @@
                                     <div class="flex items-center mt-2">
                                         <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
                                     </div>
+                                    <span class="text-xs text-gray-500 ml-2">Assigned to: ${task.assignedUser.username}</span>
                                     <div class="mt-2 flex flex-wrap" id="tags-${task.id}">
                                         <c:forEach var="tag" items="${task.tags}">
                                             <span class="tag mr-2 mb-2">${tag}</span>
@@ -135,7 +146,7 @@
                             <c:if test="${task.status == 'DONE'}">
                                 <div id="task-${task.id}" class="bg-white p-3 rounded shadow relative border-l-4 border-green-400" draggable="true">
                                     <div class="absolute top-2 right-2 flex items-center">
-                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}')" class="text-blue-500 hover:text-blue-700 p-1">
+                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}', '${task.assignedUser.id}')" class="text-blue-500 hover:text-blue-700 p-1">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                                             </svg>
@@ -154,6 +165,7 @@
                                     <div class="flex items-center mt-2">
                                         <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
                                     </div>
+                                    <span class="text-xs text-gray-500 ml-2">Assigned to: ${task.assignedUser.username}</span>
                                     <div class="mt-2 flex flex-wrap" id="tags-${task.id}">
                                         <c:forEach var="tag" items="${task.tags}">
                                             <span class="tag mr-2 mb-2">${tag}</span>
@@ -300,6 +312,15 @@
                 </div>
                 <input type="hidden" id="taskTagsHidden" name="tags" required>
             </div>
+            <div class="mb-4">
+                <label for="taskAssignedUser" class="block text-gray-700 text-sm font-bold mb-2">Assign To:</label>
+                <select id="taskAssignedUser" name="assignedUserId" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="">Select User</option>
+                    <c:forEach var="user" items="${users}">
+                        <option value="${user.id}">${user.username}</option>
+                    </c:forEach>
+                </select>
+            </div>
             <div class="flex items-center justify-between">
                 <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Create
@@ -345,6 +366,15 @@
                 </div>
                 <input type="hidden" id="editTaskTagsHidden" name="tags" required>
             </div>
+            <div class="mb-4">
+                <label for="editTaskAssignedUser" class="block text-gray-700 text-sm font-bold mb-2">Assign To:</label>
+                <select id="editTaskAssignedUser" name="assignedUserId" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="">Select User</option>
+                    <c:forEach var="user" items="${users}">
+                        <option value="${user.id}">${user.username}</option>
+                    </c:forEach>
+                </select>
+            </div>
             <div class="flex items-center justify-between">
                 <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Update
@@ -358,6 +388,183 @@
 </div>
 
 <script>
+    // Add these styles to your existing <style> section or CSS file
+    document.head.insertAdjacentHTML('beforeend', `
+<style>
+    .task-column.drag-over {
+        background-color: #e2e8f0;
+        transition: background-color 0.3s ease;
+    }
+    .task[draggable="true"] {
+        cursor: move;
+    }
+    .task.dragging {
+        opacity: 0.5;
+        transition: opacity 0.3s ease;
+    }
+</style>
+`);
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM fully loaded');
+        initializePage();
+    });
+
+    function initializePage() {
+        createTagInput('taskTagContainer', 'taskTags', 'taskTagsHidden');
+        createTagInput('editTaskTagContainer', 'editTaskTags', 'editTaskTagsHidden');
+        initDragAndDrop();
+
+        // Add event listeners for form submissions
+        document.getElementById('createTaskForm').addEventListener('submit', handleFormSubmit);
+        document.getElementById('editTaskForm').addEventListener('submit', handleFormSubmit);
+
+        console.log('Task management script loaded');
+    }
+
+    function handleFormSubmit(e) {
+        const formId = e.target.id;
+        if (!validateForm(formId)) {
+            e.preventDefault();
+        } else {
+            const modalId = formId === 'createTaskForm' ? 'createTaskModal' : 'editTaskModal';
+            closeModal(modalId);
+            setTimeout(() => {
+                refreshTaskList();
+            }, 500);
+        }
+    }
+
+    function initDragAndDrop() {
+        console.log('Initializing drag and drop');
+        document.removeEventListener('dragstart', dragStart);
+        document.removeEventListener('dragend', dragEnd);
+        document.removeEventListener('dragover', dragOver);
+        document.removeEventListener('dragenter', dragEnter);
+        document.removeEventListener('dragleave', dragLeave);
+        document.removeEventListener('drop', drop);
+
+        document.addEventListener('dragstart', dragStart);
+        document.addEventListener('dragend', dragEnd);
+        document.addEventListener('dragover', dragOver);
+        document.addEventListener('dragenter', dragEnter);
+        document.addEventListener('dragleave', dragLeave);
+        document.addEventListener('drop', drop);
+    }
+
+    function dragStart(e) {
+        if (e.target.getAttribute('draggable') === 'true') {
+            e.dataTransfer.setData('text/plain', e.target.id);
+            console.log('Drag started, setting data:', e.target.id);
+            setTimeout(() => {
+                e.target.classList.add('dragging');
+            }, 0);
+        }
+    }
+
+    function dragEnd(e) {
+        if (e.target.getAttribute('draggable') === 'true') {
+            e.target.classList.remove('dragging');
+            console.log('Drag ended:', e.target.id);
+        }
+    }
+
+    function dragOver(e) {
+        if (e.target.closest('.task-column')) {
+            e.preventDefault();
+        }
+    }
+
+    function dragEnter(e) {
+        const column = e.target.closest('.task-column');
+        if (column) {
+            e.preventDefault();
+            column.classList.add('drag-over');
+            console.log('Entered column:', column.dataset.status);
+        }
+    }
+
+    function dragLeave(e) {
+        const column = e.target.closest('.task-column');
+        if (column) {
+            column.classList.remove('drag-over');
+            console.log('Left column:', column.dataset.status);
+        }
+    }
+
+    function drop(e) {
+        const column = e.target.closest('.task-column');
+        if (column) {
+            e.preventDefault();
+            console.log('Drop event triggered');
+            column.classList.remove('drag-over');
+            const fullTaskId = e.dataTransfer.getData('text');
+            console.log('Retrieved full task ID:', fullTaskId);
+            const taskId = fullTaskId.split('-')[1];
+            console.log('Extracted task ID:', taskId);
+            const taskElement = document.getElementById(fullTaskId);
+
+            if (taskElement) {
+                const newStatus = column.dataset.status;
+                const taskList = column.querySelector('.task-list');
+                taskList.appendChild(taskElement);
+                const assignedUserId = taskElement.dataset.assignedUserId;
+                updateTaskStatus(taskId, newStatus, assignedUserId);
+
+                // Update task's visual state based on new status
+                taskElement.classList.remove('border-l-4', 'border-yellow-400', 'border-green-400');
+                if (newStatus === 'IN_PROGRESS') {
+                    taskElement.classList.add('border-l-4', 'border-yellow-400');
+                } else if (newStatus === 'DONE') {
+                    taskElement.classList.add('border-l-4', 'border-green-400');
+                }
+                console.log('Task dropped:', taskId, 'New status:', newStatus, 'Assigned to:', assignedUserId);
+            } else {
+                console.log('Task element not found:', fullTaskId);
+            }
+        }
+    }
+
+    function updateTaskStatus(taskId, newStatus, assignedUserId) {
+        console.log('Updating task status:', taskId, newStatus, 'Assigned to:', assignedUserId);
+        const form = new FormData();
+        form.append('id', taskId);
+        form.append('status', newStatus);
+        form.append('assignedUserId', assignedUserId);
+
+        axios.post('${pageContext.request.contextPath}/task/updateStatus', form)
+            .then(function (response) {
+                console.log('Task status updated successfully:', response.data);
+                // Optionally, update the UI or refresh the task list here
+            })
+            .catch(function (error) {
+                console.error('Error updating task status:', error);
+                if (error.response) {
+                    console.error('Response data:', error.response.data);
+                    console.error('Response status:', error.response.status);
+                    console.error('Response headers:', error.response.headers);
+                }
+                // Optionally, show an error message to the user
+            });
+    }
+
+    function refreshTaskList() {
+        axios.get('${pageContext.request.contextPath}/tasks')
+            .then(function (response) {
+                // Assuming the response contains HTML for the updated task list
+                document.querySelector('.task-list-container').innerHTML = response.data;
+                reinitializeDragAndDrop();
+            })
+            .catch(function (error) {
+                console.error('Error refreshing task list:', error);
+            });
+    }
+
+    function reinitializeDragAndDrop() {
+        console.log('Reinitializing drag and drop');
+        initDragAndDrop();
+    }
+
     function openModal(modalId) {
         document.getElementById(modalId).classList.remove('hidden');
     }
@@ -430,17 +637,6 @@
         return { addTag, removeTag, updateTags };
     }
 
-    function updateTaskTags(taskId, tags) {
-        const tagContainer = document.getElementById(`tags-${taskId}`);
-        tagContainer.innerHTML = '';
-        tags.split(',').forEach(tag => {
-            const tagElement = document.createElement('span');
-            tagElement.classList.add('tag', 'mr-2', 'mb-2');
-            tagElement.textContent = tag.trim();
-            tagContainer.appendChild(tagElement);
-        });
-    }
-
     function validateTags(inputId) {
         const hiddenInput = document.getElementById(inputId);
         const tags = hiddenInput.value.split(',').filter(tag => tag.trim() !== '');
@@ -457,122 +653,13 @@
         return form.checkValidity();
     }
 
-    function initDragAndDrop() {
-        const tasks = document.querySelectorAll('[draggable="true"]');
-        const columns = document.querySelectorAll('.task-column');
-
-        tasks.forEach(task => {
-            task.addEventListener('dragstart', dragStart);
-            task.addEventListener('dragend', dragEnd);
-            console.log('Attached drag listeners to task:', task.id);
-        });
-
-        columns.forEach(column => {
-            column.addEventListener('dragover', dragOver);
-            column.addEventListener('dragenter', dragEnter);
-            column.addEventListener('dragleave', dragLeave);
-            column.addEventListener('drop', drop);
-            console.log('Attached drop listener to column:', column.dataset.status);
-        });
-
-        console.log('Drag and drop initialized');
-    }
-
-    function dragStart(e) {
-        e.dataTransfer.setData('text/plain', e.target.id);
-        console.log('Drag started, setting data:', e.target.id);
-        setTimeout(() => {
-            e.target.classList.add('opacity-50');
-        }, 0);
-    }
-
-    function dragEnd(e) {
-        e.target.classList.remove('opacity-50');
-        console.log('Drag ended:', e.target.id);
-    }
-
-    function dragOver(e) {
-        e.preventDefault();
-    }
-
-    function dragEnter(e) {
-        e.preventDefault();
-        const column = e.target.closest('.task-column');
-        if (column) {
-            column.classList.add('bg-gray-200');
-            console.log('Entered column:', column.dataset.status);
-        }
-    }
-
-    function dragLeave(e) {
-        const column = e.target.closest('.task-column');
-        if (column) {
-            column.classList.remove('bg-gray-200');
-            console.log('Left column:', column.dataset.status);
-        }
-    }
-
-    function drop(e) {
-        e.preventDefault();
-        console.log('Drop event triggered');
-        const column = e.target.closest('.task-column');
-        if (!column) {
-            console.log('Drop target is not a column');
-            return;
-        }
-
-        column.classList.remove('bg-gray-200');
-        const fullTaskId = e.dataTransfer.getData('text');
-        console.log('Retrieved full task ID:', fullTaskId);
-        const taskId = fullTaskId.split('-')[1];
-        console.log('Extracted task ID:', taskId);
-        const taskElement = document.getElementById(fullTaskId);
-
-        if (taskElement) {
-            const newStatus = column.dataset.status;
-            const taskList = column.querySelector('.task-list');
-            taskList.appendChild(taskElement);
-            updateTaskStatus(taskId, newStatus);
-
-            // Update task's visual state based on new status
-            taskElement.classList.remove('border-l-4', 'border-yellow-400', 'border-green-400');
-            if (newStatus === 'IN_PROGRESS') {
-                taskElement.classList.add('border-l-4', 'border-yellow-400');
-            } else if (newStatus === 'DONE') {
-                taskElement.classList.add('border-l-4', 'border-green-400');
-            }
-            console.log('Task dropped:', taskId, 'New status:', newStatus);
-        } else {
-            console.log('Task element not found:', fullTaskId);
-        }
-    }
-
-    function updateTaskStatus(taskId, newStatus) {
-        console.log('Updating task status:', taskId, newStatus);
-        const form = new FormData();
-        form.append('id', taskId);
-        form.append('status', newStatus);
-
-        axios.post('${pageContext.request.contextPath}/task/updateStatus', form)
-            .then(function (response) {
-                console.log('Task status updated successfully:', response.data);
-            })
-            .catch(function (error) {
-                console.error('Error updating task status:', error);
-                if (error.response) {
-                    console.error('Response data:', error.response.data);
-                    console.error('Response status:', error.response.status);
-                    console.error('Response headers:', error.response.headers);
-                }
-            });
-    }
-
-    function populateEditTaskForm(id, title, description, dueDate, status, tags) {
+    function populateEditTaskForm(id, title, description, dueDate, status, tags, assignedUserId) {
         document.getElementById('editTaskId').value = id;
         document.getElementById('editTaskTitle').value = title;
         document.getElementById('editTaskDescription').value = description;
         document.getElementById('editTaskDueDate').value = dueDate;
         document.getElementById('editTaskStatus').value = status;
+        document.getElementById('editTaskAssignedUser').value = assignedUserId;
 
         const editTagInput = createTagInput('editTaskTagContainer', 'editTaskTags', 'editTaskTagsHidden');
         document.getElementById('editTaskTagsHidden').value = tags;
@@ -587,48 +674,6 @@
         document.getElementById('editEmail').value = email;
         openModal('editModal');
     }
-
-    function reinitializeDragAndDrop() {
-        console.log('Reinitializing drag and drop');
-        initDragAndDrop();
-    }
-
-    function handleTaskUpdate() {
-        console.log('Handling task update');
-        // Update task list or perform other necessary actions
-        reinitializeDragAndDrop();
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM fully loaded');
-        createTagInput('taskTagContainer', 'taskTags', 'taskTagsHidden');
-        createTagInput('editTaskTagContainer', 'editTaskTags', 'editTaskTagsHidden');
-        initDragAndDrop();
-
-        // Add event listeners for form submissions
-        document.getElementById('createTaskForm').addEventListener('submit', function(e) {
-            if (!validateForm('createTaskForm')) {
-                e.preventDefault();
-            } else {
-                // Close the modal and reinitialize drag and drop after successful submission
-                closeModal('createTaskModal');
-                setTimeout(reinitializeDragAndDrop, 500); // Give some time for the DOM to update
-            }
-        });
-
-        document.getElementById('editTaskForm').addEventListener('submit', function(e) {
-            if (!validateForm('editTaskForm')) {
-                e.preventDefault();
-            } else {
-                // Close the modal and reinitialize drag and drop after successful submission
-                closeModal('editTaskModal');
-                setTimeout(reinitializeDragAndDrop, 500); // Give some time for the DOM to update
-            }
-        });
-
-        // Log when the script has finished loading
-        console.log('Task management script loaded');
-    });
 </script>
 </body>
 </html>

@@ -6,6 +6,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.banta.model.User;
 import org.banta.service.UserService;
 
@@ -19,6 +20,18 @@ public class UserServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User not logged in");
+            return;
+        }
+
+        User currentUser = (User) session.getAttribute("user");
+        if (currentUser.getRole() != User.Role.MANAGER) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
+            return;
+        }
+
         String action = request.getPathInfo();
         try {
             switch (action) {
@@ -39,20 +52,29 @@ public class UserServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error: " + e.getMessage());
             return;
         }
-        response.sendRedirect(request.getContextPath() + "/");
+        response.sendRedirect(request.getContextPath() + "/dashboard");
     }
 
     private void createUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String username = request.getParameter("username");
         String email = request.getParameter("email");
         String password = request.getParameter("password");
+        String roleString = request.getParameter("role");
 
-        if (username == null || username.isEmpty() || email == null || email.isEmpty() || password == null || password.isEmpty()) {
+        if (username == null || username.isEmpty() || email == null || email.isEmpty() || password == null || password.isEmpty() || roleString == null || roleString.isEmpty()) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "All fields are required.");
             return;
         }
 
-        User newUser = new User(username, password, email);
+        User.Role role;
+        try {
+            role = User.Role.valueOf(roleString.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid role.");
+            return;
+        }
+
+        User newUser = new User(username, password, email, role);
         userService.createUser(newUser);
     }
 
@@ -68,9 +90,18 @@ public class UserServlet extends HttpServlet {
             String username = request.getParameter("username");
             String email = request.getParameter("email");
             String password = request.getParameter("password");
+            String roleString = request.getParameter("role");
 
-            if (username == null || username.isEmpty() || email == null || email.isEmpty()) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Username and email cannot be empty.");
+            if (username == null || username.isEmpty() || email == null || email.isEmpty() || roleString == null || roleString.isEmpty()) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Username, email, and role cannot be empty.");
+                return;
+            }
+
+            User.Role role;
+            try {
+                role = User.Role.valueOf(roleString.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid role.");
                 return;
             }
 
@@ -78,6 +109,7 @@ public class UserServlet extends HttpServlet {
             if (user != null) {
                 user.setUsername(username);
                 user.setEmail(email);
+                user.setRole(role);
                 if (password != null && !password.isEmpty()) {
                     user.setPassword(password);
                 }

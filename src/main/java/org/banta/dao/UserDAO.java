@@ -5,7 +5,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.banta.model.User;
 
-
 import java.util.List;
 
 @Stateless
@@ -40,6 +39,19 @@ public class UserDAO {
     public User findByUsername(String username) {
         return entityManager.createQuery("SELECT u FROM User u WHERE u.username = :username", User.class)
                 .setParameter("username", username)
+                .getSingleResult();
+    }
+
+    public List<User> findByRole(User.Role role) {
+        return entityManager.createQuery("SELECT u FROM User u WHERE u.role = :role", User.class)
+                .setParameter("role", role)
+                .getResultList();
+    }
+
+    public User findByUsernameAndPassword(String username, String password) {
+        return entityManager.createQuery("SELECT u FROM User u WHERE u.username = :username AND u.password = :password", User.class)
+                .setParameter("username", username)
+                .setParameter("password", password)
                 .getSingleResult();
     }
 }

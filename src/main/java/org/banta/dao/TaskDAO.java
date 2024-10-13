@@ -52,4 +52,11 @@ public class TaskDAO {
                 .setParameter("doneStatus", Task.Status.DONE)
                 .getResultList();
     }
+
+    public List<Task> findByStatus(Task.Status status) {
+        return entityManager.createQuery(
+                        "SELECT DISTINCT t FROM Task t LEFT JOIN FETCH t.tags WHERE t.status = :status", Task.class)
+                .setParameter("status", status)
+                .getResultList();
+    }
 }
