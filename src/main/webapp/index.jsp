@@ -61,7 +61,7 @@
     <aside id="sidebar-compact" class="w-20 overflow-y-auto bg-white md:block flex-shrink-0">
         <div class="py-4 text-gray-500">
             <div class="flex justify-center items-center mb-6">
-                <img src="https://via.placeholder.com/150" alt="Logo" class="h-10 w-10" id="sidebar-logo-compact">
+                <img src="https://cdn.discordapp.com/attachments/1159494088886849556/1295421018206240911/bantask-removebg-preview_1.png?ex=670e9656&is=670d44d6&hm=aa1c1214b96c93ae8283ef41c50dfb3a2c0d57a411b03f097dcf0bb5a2822aeb&" alt="Logo" class="h-15 w-15" id="sidebar-logo-compact">
             </div>
             <button id="sidebar-toggle" class="w-full flex justify-center items-center py-2 focus:outline-none">
                 <i class="fas fa-chevron-right w-5 h-5"></i>
@@ -90,7 +90,7 @@
     <aside id="sidebar-expanded" class="w-64 overflow-y-auto bg-white md:block flex-shrink-0 hidden">
         <div class="py-4 text-gray-500">
             <div class="flex justify-center items-center mb-6">
-                <img src="https://via.placeholder.com/150" alt="Logo" class="h-16 w-16" id="sidebar-logo-expanded">
+                <img src="https://cdn.discordapp.com/attachments/1159494088886849556/1295420613938380800/bantask-removebg-preview.png?ex=670e95f6&is=670d4476&hm=217c2827bd0c1f9ea8a96a6f486f46f6dd8b53058e6a15c5b4722887d8f0bd7d&" alt="Logo" id="sidebar-logo-expanded">
             </div>
             <button id="sidebar-toggle-expanded" class="w-full flex justify-center items-center py-2 focus:outline-none">
                 <i class="fas fa-chevron-left w-5 h-5"></i>
@@ -174,7 +174,7 @@
                                     <c:forEach var="task" items="${tasks}">
                                         <c:if test="${task.status == 'TODO' && task.assignedUser.id == sessionScope.user.id}">
                                             <div id="task-${task.id}" class="bg-white p-3 rounded shadow relative" draggable="true" data-assigned-user-id="${task.assignedUser.id}">
-                                                <c:if test="${sessionScope.user.role == 'MANAGER'}">
+<%--                                                <c:if test="${sessionScope.user.role == 'MANAGER'}">--%>
                                                     <div class="absolute top-2 right-2 flex items-center">
                                                         <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}', '${task.assignedUser.id}')" class="text-blue-500 hover:text-blue-700 p-1">
                                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -190,7 +190,7 @@
                                                             </button>
                                                         </form>
                                                     </div>
-                                                </c:if>
+<%--                                                </c:if>--%>
                                                 <h4 class="font-medium pr-14">${task.title}</h4>
                                                 <p class="text-sm text-gray-600 mt-1">${task.description}</p>
                                                 <div class="flex items-center mt-2">
