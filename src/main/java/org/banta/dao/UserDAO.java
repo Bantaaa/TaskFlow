@@ -3,9 +3,11 @@ package org.banta.dao;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.NoResultException;
 import org.banta.model.User;
 
 import java.util.List;
+import java.util.Optional;
 
 @Stateless
 public class UserDAO {
@@ -17,8 +19,8 @@ public class UserDAO {
         entityManager.persist(user);
     }
 
-    public User findById(Long id) {
-        return entityManager.find(User.class, id);
+    public Optional<User> findById(Long id) {
+        return Optional.ofNullable(entityManager.find(User.class, id));
     }
 
     public List<User> findAll() {
@@ -36,22 +38,32 @@ public class UserDAO {
         entityManager.remove(user);
     }
 
-    public User findByUsername(String username) {
-        return entityManager.createQuery("SELECT u FROM User u WHERE u.username = :username", User.class)
-                .setParameter("username", username)
-                .getSingleResult();
+    public Optional<User> findByUsername(String username) {
+        try {
+            User user = entityManager.createQuery("SELECT u FROM User u WHERE u.username = :username", User.class)
+                    .setParameter("username", username)
+                    .getSingleResult();
+            return Optional.of(user);
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
     }
 
-    public List<User> findByRole(User.Role role) {
+    public List<User> findByRole(String role) {
         return entityManager.createQuery("SELECT u FROM User u WHERE u.role = :role", User.class)
                 .setParameter("role", role)
                 .getResultList();
     }
 
-    public User findByUsernameAndPassword(String username, String password) {
-        return entityManager.createQuery("SELECT u FROM User u WHERE u.username = :username AND u.password = :password", User.class)
-                .setParameter("username", username)
-                .setParameter("password", password)
-                .getSingleResult();
+    public Optional<User> findByUsernameAndPassword(String username, String password) {
+        try {
+            User user = entityManager.createQuery("SELECT u FROM User u WHERE u.username = :username AND u.password = :password", User.class)
+                    .setParameter("username", username)
+                    .setParameter("password", password)
+                    .getSingleResult();
+            return Optional.of(user);
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
     }
 }

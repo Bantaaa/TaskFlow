@@ -1,94 +1,89 @@
 package org.banta.service;
 
 import jakarta.ejb.Stateless;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.PersistenceContext;
+import jakarta.inject.Inject;
+import org.banta.dao.UserDAO;
 import org.banta.model.User;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
+import java.util.Arrays;
 
 @Stateless
 public class UserService {
 
-    @PersistenceContext(unitName = "myPU")
-    private EntityManager entityManager;
+    @Inject
+    private UserDAO userDAO;
 
-    public User createUser(User user) {
-        if (getUserByUsername(user.getUsername()) != null) {
-            throw new IllegalArgumentException("Username already exists");
-        }
-        if (getUserByEmail(user.getEmail()) != null) {
-            throw new IllegalArgumentException("Email already exists");
-        }
-        entityManager.persist(user);
-        return user;
+    public void createUser(User user) throws SQLException {
+        user.setPassword(hashPassword(user.getPassword()));
+        userDAO.create(user);
     }
 
-    public User getUserById(Long id) {
-        return entityManager.find(User.class, id);
+    public Optional<User> getUserById(Long id) {
+        return userDAO.findById(id);
+    }
+
+    public Optional<User> getUserByUsername(String username) {
+        return userDAO.findByUsername(username);
     }
 
     public List<User> getAllUsers() {
-        return entityManager.createQuery("SELECT u FROM User u", User.class).getResultList();
+        return userDAO.findAll();
     }
 
     public void updateUser(User user) {
-        entityManager.merge(user);
+        userDAO.update(user);
     }
 
     public void deleteUser(Long id) {
-        User user = getUserById(id);
-        if (user != null) {
-            entityManager.remove(user);
-        }
+        userDAO.findById(id).ifPresent(user -> userDAO.delete(user));
     }
 
-    public User authenticate(String username, String password) {
-        try {
-            return entityManager.createQuery("SELECT u FROM User u WHERE u.username = :username AND u.password = :password", User.class)
-                    .setParameter("username", username)
-                    .setParameter("password", password)
-                    .getSingleResult();
-        } catch (NoResultException e) {
-            return null;
-        }
-    }
-
-    public User getUserByUsername(String username) {
-        try {
-            return entityManager.createQuery("SELECT u FROM User u WHERE u.username = :username", User.class)
-                    .setParameter("username", username)
-                    .getSingleResult();
-        } catch (NoResultException e) {
-            return null;
-        }
-    }
-
-    public User getUserByEmail(String email) {
-        try {
-            return entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class)
-                    .setParameter("email", email)
-                    .getSingleResult();
-        } catch (NoResultException e) {
-            return null;
-        }
-    }
-
-    public List<User> getUsersByRole(User.Role role) {
-        return entityManager.createQuery("SELECT u FROM User u WHERE u.role = :role", User.class)
-                .setParameter("role", role)
-                .getResultList();
-    }
-
-    // Add this method if you need to change a user's password
-    public void updatePassword(Long userId, String newPassword) {
-        User user = getUserById(userId);
-        if (user != null) {
-            user.setPassword(newPassword);
-            updateUser(user);
+    public Optional<User> authenticate(String username, String password) {
+        System.out.println("Authenticating user: " + username); // Log the username
+        Optional<User> userOptional = userDAO.findByUsername(username);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            System.out.println("User found in database"); // Log if user is found
+            if (verifyPassword(password, user.getPassword())) {
+                System.out.println("Password verified successfully"); // Log successful verification
+                return Optional.of(user);
+            } else {
+                System.out.println("Password verification failed"); // Log failed verification
+            }
         } else {
-            throw new IllegalArgumentException("User not found");
+            System.out.println("User not found in database"); // Log if user is not found
         }
+        return Optional.empty();
+    }
+
+    public boolean isValidRole(String role) {
+        List<String> validRoles = Arrays.asList("ADMIN", "USER", "MANAGER");
+        return validRoles.contains(role.toUpperCase());
+    }
+
+    private String hashPassword(String password) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hashedBytes = md.digest(password.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashedBytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Error hashing password", e);
+        }
+    }
+
+    private boolean verifyPassword(String inputPassword, String storedPassword) {
+        String hashedInput = hashPassword(inputPassword);
+        System.out.println("Hashed input password: " + hashedInput);
+        System.out.println("Stored hashed password: " + storedPassword);
+        return hashedInput.equals(storedPassword);
     }
 }

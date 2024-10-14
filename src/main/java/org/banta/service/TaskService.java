@@ -8,6 +8,7 @@ import org.banta.model.User;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Stateless
 public class TaskService {
@@ -23,8 +24,8 @@ public class TaskService {
         taskDAO.create(task);
     }
 
-    public Task getTaskById(Long id) {
-        return taskDAO.findById(id);
+    public Optional<Task> getTaskById(Long id) {
+        return Optional.ofNullable(taskDAO.findById(id));
     }
 
     public List<Task> getAllTasks() {
@@ -37,11 +38,11 @@ public class TaskService {
     }
 
     public void deleteTask(Long id, User deleter) {
-        Task task = getTaskById(id);
-        if (task != null) {
+        Optional<Task> taskOptional = getTaskById(id);
+        taskOptional.ifPresent(task -> {
             validateTaskDeletion(task, deleter);
             taskDAO.delete(task);
-        }
+        });
     }
 
     public List<Task> getTasksByUser(User user) {
@@ -57,7 +58,7 @@ public class TaskService {
     }
 
     public void assignAdditionalTask(Task task, User assignee, User assigner) {
-        if (assigner.getRole() != User.Role.MANAGER && !assigner.equals(assignee)) {
+        if (!assigner.getRole().equals("MANAGER") && !assigner.equals(assignee)) {
             throw new IllegalArgumentException("Only managers can assign tasks to other users");
         }
         task.setAssignedUser(assignee);
@@ -87,7 +88,7 @@ public class TaskService {
         if (task.getTags().size() < 2) {
             throw new IllegalArgumentException("Task must have at least two tags");
         }
-        if (creator.getRole() != User.Role.MANAGER && !task.getAssignedUser().equals(creator)) {
+        if (!creator.getRole().equals("MANAGER") && !task.getAssignedUser().equals(creator)) {
             throw new IllegalArgumentException("Users can only assign tasks to themselves");
         }
     }
@@ -96,7 +97,7 @@ public class TaskService {
         if (task.getStatus() == Task.Status.DONE && task.getDueDate().isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("Task cannot be marked as done after the due date");
         }
-        if (updater.getRole() != User.Role.MANAGER && !task.getAssignedUser().equals(updater)) {
+        if (!updater.getRole().equals("MANAGER") && !task.getAssignedUser().equals(updater)) {
             if (!canUseModificationToken(updater)) {
                 throw new IllegalArgumentException("No modification tokens available");
             }
@@ -105,7 +106,7 @@ public class TaskService {
     }
 
     private void validateTaskDeletion(Task task, User deleter) {
-        if (deleter.getRole() != User.Role.MANAGER && !task.getAssignedUser().equals(deleter)) {
+        if (!deleter.getRole().equals("MANAGER") && !task.getAssignedUser().equals(deleter)) {
             if (!canUseDeletionToken(deleter)) {
                 throw new IllegalArgumentException("No deletion tokens available");
             }

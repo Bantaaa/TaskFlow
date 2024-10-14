@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 
 @WebServlet("/task/*")
 public class TaskServlet extends HttpServlet {
@@ -87,12 +88,10 @@ public class TaskServlet extends HttpServlet {
             Task newTask = new Task(title, description, dueDate, status);
             newTask.setTags(new HashSet<>(Arrays.asList(tagArray)));
 
-            if (currentUser.getRole() == User.Role.MANAGER && assignedUserIdStr != null && !assignedUserIdStr.isEmpty()) {
+            if (currentUser.getRole().equals("MANAGER") && assignedUserIdStr != null && !assignedUserIdStr.isEmpty()) {
                 Long assignedUserId = Long.parseLong(assignedUserIdStr);
-                User assignedUser = userService.getUserById(assignedUserId);
-                if (assignedUser != null) {
-                    newTask.setAssignedUser(assignedUser);
-                }
+                Optional<User> assignedUserOptional = userService.getUserById(assignedUserId);
+                assignedUserOptional.ifPresent(newTask::setAssignedUser);
             } else {
                 newTask.setAssignedUser(currentUser);
             }
@@ -112,8 +111,9 @@ public class TaskServlet extends HttpServlet {
 
         try {
             Long id = Long.parseLong(idParam);
-            Task task = taskService.getTaskById(id);
-            if (task != null) {
+            Optional<Task> taskOptional = taskService.getTaskById(id);
+            if (taskOptional.isPresent()) {
+                Task task = taskOptional.get();
                 String title = request.getParameter("title");
                 String description = request.getParameter("description");
                 String dueDateStr = request.getParameter("dueDate");
@@ -140,12 +140,10 @@ public class TaskServlet extends HttpServlet {
                 task.setStatus(status);
                 task.setTags(new HashSet<>(Arrays.asList(tagArray)));
 
-                if (currentUser.getRole() == User.Role.MANAGER && assignedUserIdStr != null && !assignedUserIdStr.isEmpty()) {
+                if (currentUser.getRole().equals("MANAGER") && assignedUserIdStr != null && !assignedUserIdStr.isEmpty()) {
                     Long assignedUserId = Long.parseLong(assignedUserIdStr);
-                    User assignedUser = userService.getUserById(assignedUserId);
-                    if (assignedUser != null) {
-                        task.setAssignedUser(assignedUser);
-                    }
+                    Optional<User> assignedUserOptional = userService.getUserById(assignedUserId);
+                    assignedUserOptional.ifPresent(task::setAssignedUser);
                 }
 
                 taskService.updateTask(task, currentUser);
@@ -190,13 +188,12 @@ public class TaskServlet extends HttpServlet {
             Task.Status status = Task.Status.valueOf(statusParam);
             Long assignedUserId = Long.parseLong(assignedUserIdParam);
 
-            Task task = taskService.getTaskById(id);
-            if (task != null) {
+            Optional<Task> taskOptional = taskService.getTaskById(id);
+            if (taskOptional.isPresent()) {
+                Task task = taskOptional.get();
                 task.setStatus(status);
-                User assignedUser = userService.getUserById(assignedUserId);
-                if (assignedUser != null) {
-                    task.setAssignedUser(assignedUser);
-                }
+                Optional<User> assignedUserOptional = userService.getUserById(assignedUserId);
+                assignedUserOptional.ifPresent(task::setAssignedUser);
                 taskService.updateTask(task, currentUser);
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().write("Task status updated successfully");

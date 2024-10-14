@@ -11,6 +11,7 @@ import org.banta.model.User;
 import org.banta.service.UserService;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @WebServlet("/auth/*")
 public class AuthServlet extends HttpServlet {
@@ -43,10 +44,10 @@ public class AuthServlet extends HttpServlet {
     private void login(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
-        User user = userService.authenticate(username, password);
-        if (user != null) {
+        Optional<User> userOptional = userService.authenticate(username, password);
+        if (userOptional.isPresent()) {
             HttpSession session = request.getSession();
-            session.setAttribute("user", user);
+            session.setAttribute("user", userOptional.get());
             response.sendRedirect(request.getContextPath() + "/dashboard");
         } else {
             request.setAttribute("error", "Invalid username or password");
@@ -58,24 +59,25 @@ public class AuthServlet extends HttpServlet {
         String username = request.getParameter("username");
         String email = request.getParameter("email");
         String password = request.getParameter("password");
-        String roleString = request.getParameter("role");
+        String role = request.getParameter("role");
 
-        User.Role role = User.Role.USER; // Default role
-        if (roleString != null && !roleString.isEmpty()) {
-            try {
-                role = User.Role.valueOf(roleString.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                request.setAttribute("error", "Invalid role specified");
-                request.getRequestDispatcher("/register.jsp").forward(request, response);
-                return;
-            }
+        if (role == null || role.isEmpty()) {
+            role = "USER"; // Default role
+        }
+
+        role = role.toUpperCase();
+
+        if (!userService.isValidRole(role)) {
+            request.setAttribute("error", "Invalid role specified");
+            request.getRequestDispatcher("/register.jsp").forward(request, response);
+            return;
         }
 
         try {
             User newUser = new User(username, password, email, role);
             userService.createUser(newUser);
             response.sendRedirect(request.getContextPath() + "/login.jsp");
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             request.setAttribute("error", e.getMessage());
             request.getRequestDispatcher("/register.jsp").forward(request, response);
         }

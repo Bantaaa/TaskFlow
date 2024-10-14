@@ -12,8 +12,8 @@
   <h1 class="text-4xl font-bold mb-4">Welcome to Task Manager</h1>
   <p class="text-xl mb-8">Manage your tasks efficiently and collaborate with your team.</p>
   <div class="space-x-4">
-    <a href="${pageContext.request.contextPath}/auth/login" class="bg-blue-500 text-white px-6 py-3 rounded hover:bg-blue-600">Login</a>
-    <a href="${pageContext.request.contextPath}/auth/register" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600">Register</a>
+    <a href="${pageContext.request.contextPath}/login.jsp" class="bg-blue-500 text-white px-6 py-3 rounded hover:bg-blue-600">Login</a>
+    <a href="${pageContext.request.contextPath}/register.jsp" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600">Register</a>
   </div>
 </div>
 </body>
