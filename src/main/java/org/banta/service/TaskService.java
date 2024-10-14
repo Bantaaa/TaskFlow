@@ -8,6 +8,7 @@ import org.banta.model.User;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Stateless
 public class TaskService {
@@ -15,29 +16,33 @@ public class TaskService {
     @Inject
     private TaskDAO taskDAO;
 
-    public void createTask(Task task) {
-        validateTaskCreation(task);
+    @Inject
+    private UserService userService;
+
+    public void createTask(Task task, User creator) {
+        validateTaskCreation(task, creator);
         taskDAO.create(task);
     }
 
-    public Task getTaskById(Long id) {
-        return taskDAO.findById(id);
+    public Optional<Task> getTaskById(Long id) {
+        return Optional.ofNullable(taskDAO.findById(id));
     }
 
     public List<Task> getAllTasks() {
         return taskDAO.findAll();
     }
 
-    public void updateTask(Task task) {
-        validateTaskUpdate(task);
+    public void updateTask(Task task, User updater) {
+        validateTaskUpdate(task, updater);
         taskDAO.update(task);
     }
 
-    public void deleteTask(Long id) {
-        Task task = getTaskById(id);
-        if (task != null) {
+    public void deleteTask(Long id, User deleter) {
+        Optional<Task> taskOptional = getTaskById(id);
+        taskOptional.ifPresent(task -> {
+            validateTaskDeletion(task, deleter);
             taskDAO.delete(task);
-        }
+        });
     }
 
     public List<Task> getTasksByUser(User user) {
@@ -52,22 +57,60 @@ public class TaskService {
         }
     }
 
-    private void validateTaskCreation(Task task) {
+    public void assignAdditionalTask(Task task, User assignee, User assigner) {
+        if (!assigner.getRole().equals("MANAGER") && !assigner.equals(assignee)) {
+            throw new IllegalArgumentException("Only managers can assign tasks to other users");
+        }
+        task.setAssignedUser(assignee);
+        taskDAO.update(task);
+    }
+
+    public boolean canUseModificationToken(User user) {
+        // Implement logic to check if the user has available modification tokens
+        // This might involve checking a separate token tracking system
+        return true; // Placeholder implementation
+    }
+
+    public boolean canUseDeletionToken(User user) {
+        // Implement logic to check if the user has available deletion tokens
+        // This might involve checking a separate token tracking system
+        return true; // Placeholder implementation
+    }
+
+    private void validateTaskCreation(Task task, User creator) {
         LocalDate currentDate = LocalDate.now();
         if (task.getDueDate().isBefore(currentDate)) {
             throw new IllegalArgumentException("Task cannot be created in the past");
         }
-        if (task.getDueDate().isBefore(currentDate.plusDays(3))) {
+        if (task.getDueDate().isAfter(currentDate.plusDays(3))) {
             throw new IllegalArgumentException("Task cannot be scheduled more than 3 days in advance");
         }
         if (task.getTags().size() < 2) {
             throw new IllegalArgumentException("Task must have at least two tags");
         }
+        if (!creator.getRole().equals("MANAGER") && !task.getAssignedUser().equals(creator)) {
+            throw new IllegalArgumentException("Users can only assign tasks to themselves");
+        }
     }
 
-    private void validateTaskUpdate(Task task) {
+    private void validateTaskUpdate(Task task, User updater) {
         if (task.getStatus() == Task.Status.DONE && task.getDueDate().isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("Task cannot be marked as done after the due date");
+        }
+        if (!updater.getRole().equals("MANAGER") && !task.getAssignedUser().equals(updater)) {
+            if (!canUseModificationToken(updater)) {
+                throw new IllegalArgumentException("No modification tokens available");
+            }
+            // Implement logic to use a modification token
+        }
+    }
+
+    private void validateTaskDeletion(Task task, User deleter) {
+        if (!deleter.getRole().equals("MANAGER") && !task.getAssignedUser().equals(deleter)) {
+            if (!canUseDeletionToken(deleter)) {
+                throw new IllegalArgumentException("No deletion tokens available");
+            }
+            // Implement logic to use a deletion token
         }
     }
 }

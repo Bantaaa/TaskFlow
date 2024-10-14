@@ -40,7 +40,6 @@ public class Task implements Serializable {
         TODO, IN_PROGRESS, DONE
     }
 
-    // Constructors
     public Task() {}
 
     public Task(String title, String description, LocalDate dueDate, Status status) {
@@ -50,72 +49,31 @@ public class Task implements Serializable {
         this.status = status;
     }
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    // Getters and setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    public String getTitle() {
-        return title;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public LocalDate getDueDate() { return dueDate; }
+    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
 
-    public String getDescription() {
-        return description;
-    }
+    public Status getStatus() { return status; }
+    public void setStatus(Status status) { this.status = status; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public Set<String> getTags() { return tags; }
+    public void setTags(Set<String> tags) { this.tags = tags; }
 
-    public LocalDate getDueDate() {
-        return dueDate;
-    }
+    public void addTag(String tag) { this.tags.add(tag); }
+    public void removeTag(String tag) { this.tags.remove(tag); }
 
-    public void setDueDate(LocalDate dueDate) {
-        this.dueDate = dueDate;
-    }
+    public User getAssignedUser() { return assignedUser; }
+    public void setAssignedUser(User assignedUser) { this.assignedUser = assignedUser; }
 
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public Set<String> getTags() {
-        return tags;
-    }
-
-    public void setTags(Set<String> tags) {
-        this.tags = tags;
-    }
-
-    public void addTag(String tag) {
-        this.tags.add(tag);
-    }
-
-    public void removeTag(String tag) {
-        this.tags.remove(tag);
-    }
-
-    public User getAssignedUser() {
-        return assignedUser;
-    }
-
-    public void setAssignedUser(User assignedUser) {
-        this.assignedUser = assignedUser;
-    }
-
-    // toString method for debugging
     @Override
     public String toString() {
         return "Task{" +

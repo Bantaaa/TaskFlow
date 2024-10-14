@@ -6,6 +6,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.banta.model.Task;
 import org.banta.model.User;
 import org.banta.service.TaskService;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 
 @WebServlet("/task/*")
 public class TaskServlet extends HttpServlet {
@@ -27,20 +29,28 @@ public class TaskServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User not logged in");
+            return;
+        }
+
+        User currentUser = (User) session.getAttribute("user");
         String action = request.getPathInfo();
+
         try {
             switch (action) {
                 case "/create":
-                    createTask(request, response);
+                    createTask(request, response, currentUser);
                     break;
                 case "/update":
-                    updateTask(request, response);
+                    updateTask(request, response, currentUser);
                     break;
                 case "/delete":
-                    deleteTask(request, response);
+                    deleteTask(request, response, currentUser);
                     break;
                 case "/updateStatus":
-                    updateTaskStatus(request, response);
+                    updateTaskStatus(request, response, currentUser);
                     return; // Return here to avoid redirect for AJAX calls
                 default:
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid action");
@@ -53,7 +63,7 @@ public class TaskServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/");
     }
 
-    private void createTask(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void createTask(HttpServletRequest request, HttpServletResponse response, User currentUser) throws IOException {
         String title = request.getParameter("title");
         String description = request.getParameter("description");
         String dueDateStr = request.getParameter("dueDate");
@@ -78,21 +88,21 @@ public class TaskServlet extends HttpServlet {
             Task newTask = new Task(title, description, dueDate, status);
             newTask.setTags(new HashSet<>(Arrays.asList(tagArray)));
 
-            if (assignedUserIdStr != null && !assignedUserIdStr.isEmpty()) {
+            if (currentUser.getRole().equals("MANAGER") && assignedUserIdStr != null && !assignedUserIdStr.isEmpty()) {
                 Long assignedUserId = Long.parseLong(assignedUserIdStr);
-                User assignedUser = userService.getUserById(assignedUserId);
-                if (assignedUser != null) {
-                    newTask.setAssignedUser(assignedUser);
-                }
+                Optional<User> assignedUserOptional = userService.getUserById(assignedUserId);
+                assignedUserOptional.ifPresent(newTask::setAssignedUser);
+            } else {
+                newTask.setAssignedUser(currentUser);
             }
 
-            taskService.createTask(newTask);
+            taskService.createTask(newTask, currentUser);
         } catch (IllegalArgumentException e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid input: " + e.getMessage());
         }
     }
 
-    private void updateTask(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void updateTask(HttpServletRequest request, HttpServletResponse response, User currentUser) throws IOException {
         String idParam = request.getParameter("id");
         if (idParam == null) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Task ID is required.");
@@ -101,20 +111,21 @@ public class TaskServlet extends HttpServlet {
 
         try {
             Long id = Long.parseLong(idParam);
-            String title = request.getParameter("title");
-            String description = request.getParameter("description");
-            String dueDateStr = request.getParameter("dueDate");
-            String statusStr = request.getParameter("status");
-            String tagsStr = request.getParameter("tags");
-            String assignedUserIdStr = request.getParameter("assignedUserId");
+            Optional<Task> taskOptional = taskService.getTaskById(id);
+            if (taskOptional.isPresent()) {
+                Task task = taskOptional.get();
+                String title = request.getParameter("title");
+                String description = request.getParameter("description");
+                String dueDateStr = request.getParameter("dueDate");
+                String statusStr = request.getParameter("status");
+                String tagsStr = request.getParameter("tags");
+                String assignedUserIdStr = request.getParameter("assignedUserId");
 
-            if (title == null || title.isEmpty() || dueDateStr == null || dueDateStr.isEmpty() || statusStr == null || statusStr.isEmpty() || tagsStr == null || tagsStr.isEmpty()) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Title, due date, status, and tags are required.");
-                return;
-            }
+                if (title == null || title.isEmpty() || dueDateStr == null || dueDateStr.isEmpty() || statusStr == null || statusStr.isEmpty() || tagsStr == null || tagsStr.isEmpty()) {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Title, due date, status, and tags are required.");
+                    return;
+                }
 
-            Task task = taskService.getTaskById(id);
-            if (task != null) {
                 LocalDate dueDate = LocalDate.parse(dueDateStr);
                 Task.Status status = Task.Status.valueOf(statusStr);
                 String[] tagArray = tagsStr.split(",");
@@ -129,17 +140,13 @@ public class TaskServlet extends HttpServlet {
                 task.setStatus(status);
                 task.setTags(new HashSet<>(Arrays.asList(tagArray)));
 
-                if (assignedUserIdStr != null && !assignedUserIdStr.isEmpty()) {
+                if (currentUser.getRole().equals("MANAGER") && assignedUserIdStr != null && !assignedUserIdStr.isEmpty()) {
                     Long assignedUserId = Long.parseLong(assignedUserIdStr);
-                    User assignedUser = userService.getUserById(assignedUserId);
-                    if (assignedUser != null) {
-                        task.setAssignedUser(assignedUser);
-                    }
-                } else {
-                    task.setAssignedUser(null);
+                    Optional<User> assignedUserOptional = userService.getUserById(assignedUserId);
+                    assignedUserOptional.ifPresent(task::setAssignedUser);
                 }
 
-                taskService.updateTask(task);
+                taskService.updateTask(task, currentUser);
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Task not found.");
             }
@@ -150,7 +157,7 @@ public class TaskServlet extends HttpServlet {
         }
     }
 
-    private void deleteTask(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void deleteTask(HttpServletRequest request, HttpServletResponse response, User currentUser) throws IOException {
         String idParam = request.getParameter("id");
         if (idParam == null) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Task ID is required.");
@@ -158,36 +165,43 @@ public class TaskServlet extends HttpServlet {
         }
         try {
             Long id = Long.parseLong(idParam);
-            taskService.deleteTask(id);
+            taskService.deleteTask(id, currentUser);
         } catch (NumberFormatException e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid Task ID format.");
+        } catch (IllegalArgumentException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid input: " + e.getMessage());
         }
     }
 
-    private void updateTaskStatus(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void updateTaskStatus(HttpServletRequest request, HttpServletResponse response, User currentUser) throws IOException {
         String idParam = request.getParameter("id");
         String statusParam = request.getParameter("status");
+        String assignedUserIdParam = request.getParameter("assignedUserId");
 
-        if (idParam == null || statusParam == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Task ID and status are required.");
+        if (idParam == null || statusParam == null || assignedUserIdParam == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Task ID, status, and assigned user ID are required.");
             return;
         }
 
         try {
             Long id = Long.parseLong(idParam);
             Task.Status status = Task.Status.valueOf(statusParam);
+            Long assignedUserId = Long.parseLong(assignedUserIdParam);
 
-            Task task = taskService.getTaskById(id);
-            if (task != null) {
+            Optional<Task> taskOptional = taskService.getTaskById(id);
+            if (taskOptional.isPresent()) {
+                Task task = taskOptional.get();
                 task.setStatus(status);
-                taskService.updateTask(task);
+                Optional<User> assignedUserOptional = userService.getUserById(assignedUserId);
+                assignedUserOptional.ifPresent(task::setAssignedUser);
+                taskService.updateTask(task, currentUser);
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().write("Task status updated successfully");
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Task not found.");
             }
         } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid Task ID format.");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid Task ID or Assigned User ID format.");
         } catch (IllegalArgumentException e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid status.");
         }
