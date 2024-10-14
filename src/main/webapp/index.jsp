@@ -61,7 +61,7 @@
     <aside id="sidebar-compact" class="w-20 overflow-y-auto bg-white md:block flex-shrink-0">
         <div class="py-4 text-gray-500">
             <div class="flex justify-center items-center mb-6">
-                <img src="https://cdn.discordapp.com/attachments/1159494088886849556/1295421018206240911/bantask-removebg-preview_1.png?ex=670e9656&is=670d44d6&hm=aa1c1214b96c93ae8283ef41c50dfb3a2c0d57a411b03f097dcf0bb5a2822aeb&" alt="Logo" class="h-15 w-15" id="sidebar-logo-compact">
+                <img src="https://cdn.discordapp.com/attachments/1159494088886849556/1295447354643578951/B.png?ex=670eaedd&is=670d5d5d&hm=5258a2add80917f29a9cef885fe0c3352c24015a9d49f07de7c3d878d3592408&" alt="Logo" class="h-15 w-15" id="sidebar-logo-compact">
             </div>
             <button id="sidebar-toggle" class="w-full flex justify-center items-center py-2 focus:outline-none">
                 <i class="fas fa-chevron-right w-5 h-5"></i>
@@ -300,33 +300,31 @@
                     <c:if test="${sessionScope.user.role == 'MANAGER'}">
                         <div class="bg-white rounded-lg shadow-md p-6">
                             <h2 class="text-2xl font-semibold mb-4 text-indigo-800">Team Members</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    <c:forEach var="user" items="${users}">
-                                        <div class="bg-gray-50 p-4 rounded-lg flex items-center space-x-4 relative">
-                                            <img src="https://assets.audiomack.com/mulero-elijah/67cd048368eb503188164eabfcfb65ea.jpeg" alt="${user.username}" class="w-12 h-12 rounded-full bg-gray-300">
-                                            <div class="flex-grow">
-                                                <p class="font-medium">${user.username}</p>
-                                                <p class="text-sm text-gray-500">${user.email}</p>
-                                            </div>
-                                            <div class="flex items-center">
-                                                <button onclick="populateEditForm(${user.id}, '${user.username}', '${user.email}')" class="text-blue-500 hover:text-blue-700 p-1">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                <c:forEach var="user" items="${users}">
+                                    <div class="bg-gray-50 p-4 rounded-lg flex items-center space-x-4">
+                                        <img src="https://assets.audiomack.com/mulero-elijah/67cd048368eb503188164eabfcfb65ea.jpeg" alt="${user.username}" class="w-12 h-12 rounded-full bg-gray-300">
+                                        <div class="flex-grow">
+                                            <p class="font-medium">${user.username}</p>
+                                            <p class="text-sm text-gray-500">${user.email}</p>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <button onclick="populateEditForm(${user.id}, '${user.username}', '${user.email}')" class="text-blue-500 hover:text-blue-700 p-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                                </svg>
+                                            </button>
+                                            <form action="${pageContext.request.contextPath}/user/delete" method="post" class="inline-block">
+                                                <input type="hidden" name="id" value="${user.id}">
+                                                <button type="submit" class="text-red-500 hover:text-red-700 p-1">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
                                                     </svg>
                                                 </button>
-                                                <form action="${pageContext.request.contextPath}/user/delete" method="post" class="inline-block">
-                                                    <input type="hidden" name="id" value="${user.id}">
-                                                    <button type="submit" class="text-red-500 hover:text-red-700 p-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                                        </svg>
-                                                    </button>
-                                                </form>
-                                            </div>
+                                            </form>
                                         </div>
-                                    </c:forEach>
-                                </div>
+                                    </div>
+                                </c:forEach>
                             </div>
                             <div class="mt-4">
                                 <button onclick="openModal('createModal')" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
