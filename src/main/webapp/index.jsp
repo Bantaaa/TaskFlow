@@ -6,7 +6,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task and User Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         .tag-container {
@@ -40,193 +43,303 @@
             padding: 5px;
             font-size: 0.875rem;
         }
+        .sidebar-toggle {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            z-index: 10;
+        }
+        .hidden {
+            display: none;
+        }
+
     </style>
 </head>
 <body class="bg-gray-100">
-<div class="bg-indigo-600 text-white p-4">
-    <div class="container mx-auto flex justify-between items-center">
-        <h1 class="text-2xl font-bold">Task Manager Dashboard</h1>
-        <div class="flex items-center">
-            <span class="mr-4">Welcome, ${sessionScope.user.username}</span>
-            <a href="${pageContext.request.contextPath}/logout" class="bg-white text-indigo-600 px-4 py-2 rounded hover:bg-indigo-100">Logout</a>
+<div class="flex h-screen bg-gray-50" id="app-container">
+    <!-- Compact Sidebar -->
+    <aside id="sidebar-compact" class="w-20 overflow-y-auto bg-white md:block flex-shrink-0">
+        <div class="py-4 text-gray-500">
+            <div class="flex justify-center items-center mb-6">
+                <img src="https://via.placeholder.com/150" alt="Logo" class="h-10 w-10" id="sidebar-logo-compact">
+            </div>
+            <button id="sidebar-toggle" class="w-full flex justify-center items-center py-2 focus:outline-none">
+                <i class="fas fa-chevron-right w-5 h-5"></i>
+            </button>
+            <ul class="mt-6">
+                <li class="relative px-2 py-3">
+                    <a class="inline-flex items-center justify-center w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800" href="#">
+                        <i class="fas fa-home w-5 h-5"></i>
+                    </a>
+                </li>
+                <li class="relative px-2 py-3">
+                    <a class="inline-flex items-center justify-center w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800" href="#">
+                        <i class="fas fa-tasks w-5 h-5"></i>
+                    </a>
+                </li>
+                <li class="relative px-2 py-3">
+                    <a class="inline-flex items-center justify-center w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800" href="#">
+                        <i class="fas fa-users w-5 h-5"></i>
+                    </a>
+                </li>
+            </ul>
         </div>
-    </div>
-</div>
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold text-center mb-8 text-indigo-600">Task and User Dashboard</h1>
+    </aside>
 
-    <div class="space-y-8">
-        <!-- Tasks Section (Sprint Board Style with Drag and Drop) -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-2xl font-semibold mb-4 text-indigo-800">My Tasks</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- To Do Column -->
-                <div class="bg-gray-100 p-4 rounded-lg task-column" data-status="TODO">
-                    <h3 class="text-lg font-medium mb-4 text-gray-700">To Do</h3>
-                    <div class="space-y-3 task-list">
-                        <c:forEach var="task" items="${tasks}">
-                            <c:if test="${task.status == 'TODO' && task.assignedUser.id == sessionScope.user.id}">
-                                <div id="task-${task.id}" class="bg-white p-3 rounded shadow relative" draggable="true" data-assigned-user-id="${task.assignedUser.id}">
-                                    <c:if test="${sessionScope.user.role == 'MANAGER'}">
-                                        <div class="absolute top-2 right-2 flex items-center">
-                                            <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}', '${task.assignedUser.id}')" class="text-blue-500 hover:text-blue-700 p-1">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                                </svg>
-                                            </button>
-                                            <form action="${pageContext.request.contextPath}/task/delete" method="post" class="inline-block">
-                                                <input type="hidden" name="id" value="${task.id}">
-                                                <button type="submit" class="text-red-500 hover:text-red-700 p-1">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                                    </svg>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </c:if>
-                                    <h4 class="font-medium pr-14">${task.title}</h4>
-                                    <p class="text-sm text-gray-600 mt-1">${task.description}</p>
-                                    <div class="flex items-center mt-2">
-                                        <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
-                                    </div>
-                                    <div class="mt-2 flex flex-wrap" id="tags-${task.id}">
-                                        <c:forEach var="tag" items="${task.tags}">
-                                            <span class="tag mr-2 mb-2">${tag}</span>
-                                        </c:forEach>
-                                    </div>
+    <!-- Expanded Sidebar -->
+    <aside id="sidebar-expanded" class="w-64 overflow-y-auto bg-white md:block flex-shrink-0 hidden">
+        <div class="py-4 text-gray-500">
+            <div class="flex justify-center items-center mb-6">
+                <img src="https://via.placeholder.com/150" alt="Logo" class="h-16 w-16" id="sidebar-logo-expanded">
+            </div>
+            <button id="sidebar-toggle-expanded" class="w-full flex justify-center items-center py-2 focus:outline-none">
+                <i class="fas fa-chevron-left w-5 h-5"></i>
+            </button>
+            <ul class="mt-6">
+                <li class="relative px-6 py-3">
+                    <a class="inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800" href="#">
+                        <i class="fas fa-home w-5 h-5"></i>
+                        <span class="ml-4">Dashboard</span>
+                    </a>
+                </li>
+                <li class="relative px-6 py-3">
+                    <a class="inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800" href="#">
+                        <i class="fas fa-tasks w-5 h-5"></i>
+                        <span class="ml-4">Tasks</span>
+                    </a>
+                </li>
+                <li class="relative px-6 py-3">
+                    <a class="inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800" href="#">
+                        <i class="fas fa-users w-5 h-5"></i>
+                        <span class="ml-4">Team</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </aside>
+
+    <div class="flex flex-col flex-1 w-full">
+        <!-- Navbar -->
+        <header class="z-10 py-4 bg-white shadow-md">
+            <div class="container flex items-center justify-between h-full px-6 mx-auto text-purple-600">
+
+
+
+                <!-- Search input -->
+                <div class="flex justify-center flex-1 lg:mr-32">
+                    <div class="hidden relative w-full max-w-xl mr-6 focus-within:text-purple-500">
+                        <div class="absolute inset-y-0 flex items-center pl-2">
+                            <i class="fas fa-search w-4 h-4"></i>
+                        </div>
+                        <input class="w-full pl-8 pr-2 text-sm text-gray-700 placeholder-gray-600 bg-gray-100 border-0 rounded-md focus:placeholder-gray-500 focus:bg-white focus:border-purple-300 focus:outline-none focus:shadow-outline-purple form-input" type="text" placeholder="Search for projects" aria-label="Search" />
+                    </div>
+                </div>
+                <ul class="flex items-center flex-shrink-0 space-x-6">
+                    <!-- Profile menu -->
+                    <li class="relative">
+                        <button class="align-middle rounded-full focus:shadow-outline-purple focus:outline-none" id="profile-menu-button" aria-label="Account" aria-haspopup="true">
+                            <img class="object-cover w-8 h-8 rounded-full" src="https://via.placeholder.com/150" alt="" aria-hidden="true" />
+                        </button>
+                        <div id="profile-menu" class="absolute right-0 w-56 p-2 mt-2 space-y-2 text-gray-600 bg-white border border-gray-100 rounded-md shadow-md hidden" aria-label="submenu">
+                            <a class="inline-flex items-center w-full px-2 py-1 text-sm font-semibold transition-colors duration-150 rounded-md hover:bg-gray-100 hover:text-gray-800" href="#">
+                                <i class="fas fa-user mr-3 w-4 h-4"></i>
+                                <span>Profile</span>
+                            </a>
+                            <a class="inline-flex items-center w-full px-2 py-1 text-sm font-semibold transition-colors duration-150 rounded-md hover:bg-gray-100 hover:text-gray-800" href="#">
+                                <i class="fas fa-cog mr-3 w-4 h-4"></i>
+                                <span>Settings</span>
+                            </a>
+                            <a class="inline-flex items-center w-full px-2 py-1 text-sm font-semibold transition-colors duration-150 rounded-md hover:bg-gray-100 hover:text-gray-800" href="#">
+                                <i class="fas fa-sign-out-alt mr-3 w-4 h-4"></i>
+                                <span>Log out</span>
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </header>
+        <!-- Main content -->
+        <main class="h-full overflow-y-auto pt-8">
+            <div class="container px-6 mx-auto">
+                <div class="space-y-8">
+                    <!-- Tasks Section -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-2xl font-semibold mb-4 text-indigo-800">My Tasks</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- To Do Column -->
+                            <div class="bg-gray-100 p-4 rounded-lg task-column" data-status="TODO">
+                                <h3 class="text-lg font-medium mb-4 text-gray-700">To Do</h3>
+                                <div class="space-y-3 task-list">
+                                    <!-- Task items will be populated here -->
+                                    <c:forEach var="task" items="${tasks}">
+                                        <c:if test="${task.status == 'TODO' && task.assignedUser.id == sessionScope.user.id}">
+                                            <div id="task-${task.id}" class="bg-white p-3 rounded shadow relative" draggable="true" data-assigned-user-id="${task.assignedUser.id}">
+                                                <c:if test="${sessionScope.user.role == 'MANAGER'}">
+                                                    <div class="absolute top-2 right-2 flex items-center">
+                                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}', '${task.assignedUser.id}')" class="text-blue-500 hover:text-blue-700 p-1">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                                            </svg>
+                                                        </button>
+                                                        <form action="${pageContext.request.contextPath}/task/delete" method="post" class="inline-block">
+                                                            <input type="hidden" name="id" value="${task.id}">
+                                                            <button type="submit" class="text-red-500 hover:text-red-700 p-1">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                                </svg>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </c:if>
+                                                <h4 class="font-medium pr-14">${task.title}</h4>
+                                                <p class="text-sm text-gray-600 mt-1">${task.description}</p>
+                                                <div class="flex items-center mt-2">
+                                                    <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
+                                                </div>
+                                                <div class="mt-2 flex flex-wrap" id="tags-${task.id}">
+                                                    <c:forEach var="tag" items="${task.tags}">
+                                                        <span class="tag mr-2 mb-2">${tag}</span>
+                                                    </c:forEach>
+                                                </div>
+                                            </div>
+                                        </c:if>
+                                    </c:forEach>
+
                                 </div>
-                            </c:if>
-                        </c:forEach>
-                    </div>
-                </div>
-
-                <!-- In Progress Column -->
-                <div class="bg-gray-100 p-4 rounded-lg task-column" data-status="IN_PROGRESS">
-                    <h3 class="text-lg font-medium mb-4 text-gray-700">In Progress</h3>
-                    <div class="space-y-3 task-list">
-                        <c:forEach var="task" items="${tasks}">
-                            <c:if test="${task.status == 'IN_PROGRESS' && task.assignedUser.id == sessionScope.user.id}">
-                                <div id="task-${task.id}" class="bg-white p-3 rounded shadow relative border-l-4 border-yellow-400" draggable="true" data-assigned-user-id="${task.assignedUser.id}">
-                                    <c:if test="${sessionScope.user.role == 'MANAGER'}">
-                                        <div class="absolute top-2 right-2 flex items-center">
-                                            <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}', '${task.assignedUser.id}')" class="text-blue-500 hover:text-blue-700 p-1">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                                </svg>
-                                            </button>
-                                            <form action="${pageContext.request.contextPath}/task/delete" method="post" class="inline-block">
-                                                <input type="hidden" name="id" value="${task.id}">
-                                                <button type="submit" class="text-red-500 hover:text-red-700 p-1">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                                    </svg>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </c:if>
-                                    <h4 class="font-medium pr-14">${task.title}</h4>
-                                    <p class="text-sm text-gray-600 mt-1">${task.description}</p>
-                                    <div class="flex items-center mt-2">
-                                        <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
-                                    </div>
-                                    <div class="mt-2 flex flex-wrap" id="tags-${task.id}">
-                                        <c:forEach var="tag" items="${task.tags}">
-                                            <span class="tag mr-2 mb-2">${tag}</span>
-                                        </c:forEach>
-                                    </div>                                </div>
-                            </c:if>
-                        </c:forEach>
-                    </div>
-                </div>
-
-                <!-- Done Column -->
-                <div class="bg-gray-100 p-4 rounded-lg task-column" data-status="DONE">
-                    <h3 class="text-lg font-medium mb-4 text-gray-700">Done</h3>
-                    <div class="space-y-3 task-list">
-                        <c:forEach var="task" items="${tasks}">
-                            <c:if test="${task.status == 'DONE' && task.assignedUser.id == sessionScope.user.id}">
-                                <div id="task-${task.id}" class="bg-white p-3 rounded shadow relative border-l-4 border-green-400" draggable="true" data-assigned-user-id="${task.assignedUser.id}">
-                                    <c:if test="${sessionScope.user.role == 'MANAGER'}">
-                                        <div class="absolute top-2 right-2 flex items-center">
-                                            <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}', '${task.assignedUser.id}')" class="text-blue-500 hover:text-blue-700 p-1">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                                </svg>
-                                            </button>
-                                            <form action="${pageContext.request.contextPath}/task/delete" method="post" class="inline-block">
-                                                <input type="hidden" name="id" value="${task.id}">
-                                                <button type="submit" class="text-red-500 hover:text-red-700 p-1">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                                    </svg>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </c:if>
-                                    <h4 class="font-medium pr-14">${task.title}</h4>
-                                    <p class="text-sm text-gray-600 mt-1">${task.description}</p>
-                                    <div class="flex items-center mt-2">
-                                        <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
-                                    </div>
-                                    <div class="mt-2 flex flex-wrap" id="tags-${task.id}">
-                                        <c:forEach var="tag" items="${task.tags}">
-                                            <span class="tag mr-2 mb-2">${tag}</span>
-                                        </c:forEach>
-                                    </div>                                </div>
-                            </c:if>
-                        </c:forEach>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-4">
-                <button onclick="openModal('createTaskModal')" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
-                    Add New Task
-                </button>
-            </div>
-        </div>
-
-        <!-- Users Section (Only visible to managers) -->
-        <c:if test="${sessionScope.user.role == 'MANAGER'}">
-            <!-- Users Section -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-semibold mb-4 text-indigo-800">Team Members</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <c:forEach var="user" items="${users}">
-                        <div class="bg-gray-50 p-4 rounded-lg flex items-center space-x-4 relative">
-                            <img src="https://assets.audiomack.com/mulero-elijah/67cd048368eb503188164eabfcfb65ea.jpeg" alt="${user.username}" class="w-12 h-12 rounded-full bg-gray-300">
-                            <div class="flex-grow">
-                                <p class="font-medium">${user.username}</p>
-                                <p class="text-sm text-gray-500">${user.email}</p>
                             </div>
-                            <div class="flex items-center">
-                                <button onclick="populateEditForm(${user.id}, '${user.username}', '${user.email}')" class="text-blue-500 hover:text-blue-700 p-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                    </svg>
-                                </button>
-                                <form action="${pageContext.request.contextPath}/user/delete" method="post" class="inline-block">
-                                    <input type="hidden" name="id" value="${user.id}">
-                                    <button type="submit" class="text-red-500 hover:text-red-700 p-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                        </svg>
-                                    </button>
-                                </form>
+
+                            <!-- In Progress Column -->
+                            <div class="bg-gray-100 p-4 rounded-lg task-column" data-status="IN_PROGRESS">
+                                <h3 class="text-lg font-medium mb-4 text-gray-700">In Progress</h3>
+                                <div class="space-y-3 task-list">
+                                    <!-- Task items will be populated here -->
+                                    <c:forEach var="task" items="${tasks}">
+                                        <c:if test="${task.status == 'IN_PROGRESS' && task.assignedUser.id == sessionScope.user.id}">
+                                            <div id="task-${task.id}" class="bg-white p-3 rounded shadow relative border-l-4 border-yellow-400" draggable="true" data-assigned-user-id="${task.assignedUser.id}">
+                                                <c:if test="${sessionScope.user.role == 'MANAGER'}">
+                                                    <div class="absolute top-2 right-2 flex items-center">
+                                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}', '${task.assignedUser.id}')" class="text-blue-500 hover:text-blue-700 p-1">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                                            </svg>
+                                                        </button>
+                                                        <form action="${pageContext.request.contextPath}/task/delete" method="post" class="inline-block">
+                                                            <input type="hidden" name="id" value="${task.id}">
+                                                            <button type="submit" class="text-red-500 hover:text-red-700 p-1">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                                </svg>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </c:if>
+                                                <h4 class="font-medium pr-14">${task.title}</h4>
+                                                <p class="text-sm text-gray-600 mt-1">${task.description}</p>
+                                                <div class="flex items-center mt-2">
+                                                    <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
+                                                </div>
+                                                <div class="mt-2 flex flex-wrap" id="tags-${task.id}">
+                                                    <c:forEach var="tag" items="${task.tags}">
+                                                        <span class="tag mr-2 mb-2">${tag}</span>
+                                                    </c:forEach>
+                                                </div>                                </div>
+                                        </c:if>
+                                    </c:forEach>
+                                </div>
+                            </div>
+
+                            <!-- Done Column -->
+                            <div class="bg-gray-100 p-4 rounded-lg task-column" data-status="DONE">
+                                <h3 class="text-lg font-medium mb-4 text-gray-700">Done</h3>
+                                <div class="space-y-3 task-list">
+                                    <!-- Task items will be populated here -->
+                                    <c:forEach var="task" items="${tasks}">
+                                        <c:if test="${task.status == 'DONE' && task.assignedUser.id == sessionScope.user.id}">
+                                            <div id="task-${task.id}" class="bg-white p-3 rounded shadow relative border-l-4 border-green-400" draggable="true" data-assigned-user-id="${task.assignedUser.id}">
+                                                <c:if test="${sessionScope.user.role == 'MANAGER'}">
+                                                    <div class="absolute top-2 right-2 flex items-center">
+                                                        <button onclick="populateEditTaskForm(${task.id}, '${task.title}', '${task.description}', '${task.dueDate}', '${task.status}', '${task.tags}', '${task.assignedUser.id}')" class="text-blue-500 hover:text-blue-700 p-1">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                                            </svg>
+                                                        </button>
+                                                        <form action="${pageContext.request.contextPath}/task/delete" method="post" class="inline-block">
+                                                            <input type="hidden" name="id" value="${task.id}">
+                                                            <button type="submit" class="text-red-500 hover:text-red-700 p-1">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                                </svg>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </c:if>
+                                                <h4 class="font-medium pr-14">${task.title}</h4>
+                                                <p class="text-sm text-gray-600 mt-1">${task.description}</p>
+                                                <div class="flex items-center mt-2">
+                                                    <span class="text-xs text-gray-500">Due: ${task.dueDate}</span>
+                                                </div>
+                                                <div class="mt-2 flex flex-wrap" id="tags-${task.id}">
+                                                    <c:forEach var="tag" items="${task.tags}">
+                                                        <span class="tag mr-2 mb-2">${tag}</span>
+                                                    </c:forEach>
+                                                </div>                                </div>
+                                        </c:if>
+                                    </c:forEach>
+
+                                </div>
                             </div>
                         </div>
-                    </c:forEach>
-                </div>
-                <div class="mt-4">
-                    <button onclick="openModal('createModal')" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
-                        Add New User
-                    </button>
+                        <div class="mt-4">
+                            <button onclick="openModal('createTaskModal')" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                                Add New Task
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Users Section (Only visible to managers) -->
+                    <c:if test="${sessionScope.user.role == 'MANAGER'}">
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h2 class="text-2xl font-semibold mb-4 text-indigo-800">Team Members</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <c:forEach var="user" items="${users}">
+                                        <div class="bg-gray-50 p-4 rounded-lg flex items-center space-x-4 relative">
+                                            <img src="https://assets.audiomack.com/mulero-elijah/67cd048368eb503188164eabfcfb65ea.jpeg" alt="${user.username}" class="w-12 h-12 rounded-full bg-gray-300">
+                                            <div class="flex-grow">
+                                                <p class="font-medium">${user.username}</p>
+                                                <p class="text-sm text-gray-500">${user.email}</p>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <button onclick="populateEditForm(${user.id}, '${user.username}', '${user.email}')" class="text-blue-500 hover:text-blue-700 p-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                                    </svg>
+                                                </button>
+                                                <form action="${pageContext.request.contextPath}/user/delete" method="post" class="inline-block">
+                                                    <input type="hidden" name="id" value="${user.id}">
+                                                    <button type="submit" class="text-red-500 hover:text-red-700 p-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </c:forEach>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <button onclick="openModal('createModal')" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                                    Add New User
+                                </button>
+                            </div>
+                        </div>
+                    </c:if>
                 </div>
             </div>
-        </c:if>
-    </div>
+        </main>
     </div>
 </div>
-
 <!-- Create User Modal -->
 <div id="createModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
@@ -402,6 +515,30 @@
 </div>
 
 <script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebarCompact = document.getElementById('sidebar-compact');
+        const sidebarExpanded = document.getElementById('sidebar-expanded');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebarToggleExpanded = document.getElementById('sidebar-toggle-expanded');
+        const mainContent = document.querySelector('.main-content');
+
+        function toggleSidebar() {
+            if (sidebarCompact.classList.contains('hidden')) {
+                sidebarCompact.classList.remove('hidden');
+                sidebarExpanded.classList.add('hidden');
+                mainContent.style.marginLeft = '5rem';
+            } else {
+                sidebarCompact.classList.add('hidden');
+                sidebarExpanded.classList.remove('hidden');
+                mainContent.style.marginLeft = '16rem';
+            }
+        }
+
+        sidebarToggle.addEventListener('click', toggleSidebar);
+        sidebarToggleExpanded.addEventListener('click', toggleSidebar);
+    });
+
     // Add these styles to your existing <style> section or CSS file
     document.head.insertAdjacentHTML('beforeend', `
 <style>
@@ -418,6 +555,31 @@
     }
 </style>
 `);
+
+    // Sidebar toggle
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const appContainer = document.getElementById('app-container');
+
+    sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('hidden');
+        appContainer.classList.toggle('md:ml-64');
+    });
+
+    // Profile menu toggle
+    const profileMenuButton = document.getElementById('profile-menu-button');
+    const profileMenu = document.getElementById('profile-menu');
+
+    profileMenuButton.addEventListener('click', () => {
+        profileMenu.classList.toggle('hidden');
+    });
+
+    // Close profile menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!profileMenuButton.contains(e.target) && !profileMenu.contains(e.target)) {
+            profileMenu.classList.add('hidden');
+        }
+    });
 
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM fully loaded');
