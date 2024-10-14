@@ -34,6 +34,12 @@ public class TaskService {
 
     public void updateTask(Task task, User updater) {
         validateTaskUpdate(task, updater);
+        Task existingTask = taskDAO.findById(task.getId());
+        if (!updater.getRole().equals("MANAGER") && !existingTask.getAssignedUser().equals(updater)) {
+            if (!userService.useModificationToken(updater)) {
+                throw new IllegalArgumentException("No modification tokens available");
+            }
+        }
         taskDAO.update(task);
     }
 
@@ -41,6 +47,11 @@ public class TaskService {
         Optional<Task> taskOptional = getTaskById(id);
         taskOptional.ifPresent(task -> {
             validateTaskDeletion(task, deleter);
+            if (!deleter.getRole().equals("MANAGER") && !task.getAssignedUser().equals(deleter)) {
+                if (!userService.useDeletionToken(deleter)) {
+                    throw new IllegalArgumentException("No deletion tokens available");
+                }
+            }
             taskDAO.delete(task);
         });
     }
@@ -82,8 +93,8 @@ public class TaskService {
         if (task.getDueDate().isBefore(currentDate)) {
             throw new IllegalArgumentException("Task cannot be created in the past");
         }
-        if (task.getDueDate().isAfter(currentDate.plusDays(3))) {
-            throw new IllegalArgumentException("Task cannot be scheduled more than 3 days in advance");
+        if (task.getDueDate().isBefore(currentDate.plusDays(3))) {
+            throw new IllegalArgumentException("Task should be scheduled more than 3 days in advance");
         }
         if (task.getTags().size() < 2) {
             throw new IllegalArgumentException("Task must have at least two tags");

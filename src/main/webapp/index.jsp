@@ -162,6 +162,12 @@
         <main class="h-full overflow-y-auto pt-8">
             <div class="container px-6 mx-auto">
                 <div class="space-y-8">
+                    <!-- Token Information -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-2xl font-semibold mb-4 text-indigo-800">Your Tokens</h2>
+                        <p>Modification Tokens: ${sessionScope.user.modificationTokens}</p>
+                        <p>Deletion Tokens: ${sessionScope.user.deletionTokens}</p>
+                    </div>
                     <!-- Tasks Section -->
                     <div class="bg-white rounded-lg shadow-md p-6">
                         <h2 class="text-2xl font-semibold mb-4 text-indigo-800">My Tasks</h2>

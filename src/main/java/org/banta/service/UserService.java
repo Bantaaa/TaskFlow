@@ -86,4 +86,26 @@ public class UserService {
         System.out.println("Stored hashed password: " + storedPassword);
         return hashedInput.equals(storedPassword);
     }
+
+
+    public boolean useModificationToken(User user) {
+        if (user.useModificationToken()) {
+            userDAO.update(user);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean useDeletionToken(User user) {
+        if (user.useDeletionToken()) {
+            userDAO.update(user);
+            return true;
+        }
+        return false;
+    }
+
+    public void refreshUserTokens(User user) {
+        user.refreshTokens();
+        userDAO.update(user);
+    }
 }

@@ -97,6 +97,8 @@ public class TaskServlet extends HttpServlet {
             }
 
             taskService.createTask(newTask, currentUser);
+            response.setStatus(HttpServletResponse.SC_CREATED);
+            response.getWriter().write("Task created successfully");
         } catch (IllegalArgumentException e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid input: " + e.getMessage());
         }
@@ -147,13 +149,19 @@ public class TaskServlet extends HttpServlet {
                 }
 
                 taskService.updateTask(task, currentUser);
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write("Task updated successfully");
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Task not found.");
             }
         } catch (NumberFormatException e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid Task ID format.");
         } catch (IllegalArgumentException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid input: " + e.getMessage());
+            if (e.getMessage().contains("No modification tokens available")) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "No modification tokens available");
+            } else {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid input: " + e.getMessage());
+            }
         }
     }
 
@@ -166,10 +174,16 @@ public class TaskServlet extends HttpServlet {
         try {
             Long id = Long.parseLong(idParam);
             taskService.deleteTask(id, currentUser);
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.getWriter().write("Task deleted successfully");
         } catch (NumberFormatException e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid Task ID format.");
         } catch (IllegalArgumentException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid input: " + e.getMessage());
+            if (e.getMessage().contains("No deletion tokens available")) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "No deletion tokens available");
+            } else {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid input: " + e.getMessage());
+            }
         }
     }
 
@@ -203,7 +217,7 @@ public class TaskServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid Task ID or Assigned User ID format.");
         } catch (IllegalArgumentException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid status.");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid status or " + e.getMessage());
         }
     }
 }

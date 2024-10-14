@@ -1,6 +1,7 @@
 package org.banta.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "users")
@@ -22,10 +23,24 @@ public class User {
     @Column(nullable = false)
     private String role;
 
+    @Column(nullable = false)
+    private int modificationTokens;
+
+    @Column(nullable = false)
+    private int deletionTokens;
+
+    @Column(nullable = false)
+    private LocalDate lastTokenRefreshDate;
+
     // Constructors
-    public User() {}
+    public User() {
+        this.modificationTokens = 2;
+        this.deletionTokens = 1;
+        this.lastTokenRefreshDate = LocalDate.now();
+    }
 
     public User(String username, String password, String email, String role) {
+        this();
         this.username = username;
         this.password = password;
         this.email = email;
@@ -47,4 +62,40 @@ public class User {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
+    public int getModificationTokens() { return modificationTokens; }
+    public void setModificationTokens(int modificationTokens) { this.modificationTokens = modificationTokens; }
+
+    public int getDeletionTokens() { return deletionTokens; }
+    public void setDeletionTokens(int deletionTokens) { this.deletionTokens = deletionTokens; }
+
+    public LocalDate getLastTokenRefreshDate() { return lastTokenRefreshDate; }
+    public void setLastTokenRefreshDate(LocalDate lastTokenRefreshDate) { this.lastTokenRefreshDate = lastTokenRefreshDate; }
+
+    public void refreshTokens() {
+        LocalDate today = LocalDate.now();
+        if (today.isAfter(lastTokenRefreshDate)) {
+            this.modificationTokens = 2;
+            this.deletionTokens = 1;
+            this.lastTokenRefreshDate = today;
+        }
+    }
+
+    public boolean useModificationToken() {
+        refreshTokens();
+        if (modificationTokens > 0) {
+            modificationTokens--;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean useDeletionToken() {
+        refreshTokens();
+        if (deletionTokens > 0) {
+            deletionTokens--;
+            return true;
+        }
+        return false;
+    }
 }
