@@ -61,7 +61,7 @@
     <aside id="sidebar-compact" class="w-20 overflow-y-auto bg-white md:block flex-shrink-0">
         <div class="py-4 text-gray-500">
             <div class="flex justify-center items-center mb-6">
-                <img src="https://cdn.discordapp.com/attachments/1159494088886849556/1295447354643578951/B.png?ex=670eaedd&is=670d5d5d&hm=5258a2add80917f29a9cef885fe0c3352c24015a9d49f07de7c3d878d3592408&" alt="Logo" class="h-15 w-15" id="sidebar-logo-compact">
+                <img src="https://cdn.pixelbin.io/v2/banta/original/B.png" alt="Logo" class="h-15 w-15" id="sidebar-logo-compact">
             </div>
             <button id="sidebar-toggle" class="w-full flex justify-center items-center py-2 focus:outline-none">
                 <i class="fas fa-chevron-right w-5 h-5"></i>
@@ -90,7 +90,7 @@
     <aside id="sidebar-expanded" class="w-64 overflow-y-auto bg-white md:block flex-shrink-0 hidden">
         <div class="py-4 text-gray-500">
             <div class="flex justify-center items-center mb-6">
-                <img src="https://cdn.discordapp.com/attachments/1159494088886849556/1295420613938380800/bantask-removebg-preview.png?ex=670e95f6&is=670d4476&hm=217c2827bd0c1f9ea8a96a6f486f46f6dd8b53058e6a15c5b4722887d8f0bd7d&" alt="Logo" id="sidebar-logo-expanded">
+                <img src="https://cdn.pixelbin.io/v2/banta/original/bantask-removebg-preview.png" alt="Logo" id="sidebar-logo-expanded">
             </div>
             <button id="sidebar-toggle-expanded" class="w-full flex justify-center items-center py-2 focus:outline-none">
                 <i class="fas fa-chevron-left w-5 h-5"></i>
