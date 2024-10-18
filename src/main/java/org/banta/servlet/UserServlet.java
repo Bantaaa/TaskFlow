@@ -9,18 +9,22 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.banta.model.User;
 import org.banta.service.UserService;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
+import org.banta.service.TaskService;
+
 import java.io.IOException;
-import org.apache.commons.validator.routines.EmailValidator;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 @WebServlet("/user/*")
 public class UserServlet extends HttpServlet {
 
+    private static final Logger logger = Logger.getLogger(UserServlet.class.getName());
+
     @Inject
     private UserService userService;
+
+    @Inject
+    private TaskService taskService;
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -31,7 +35,7 @@ public class UserServlet extends HttpServlet {
         }
 
         User currentUser = (User) session.getAttribute("user");
-        if (!currentUser.getRole().equals("MANAGER")) {
+        if (!"MANAGER".equals(currentUser.getRole())) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
             return;
         }
@@ -53,10 +57,9 @@ public class UserServlet extends HttpServlet {
                     return;
             }
         } catch (Exception e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error: " + e.getMessage());
-            return;
+            logger.severe("Error processing request: " + e.getMessage());
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred while processing your request");
         }
-        response.sendRedirect(request.getContextPath() + "/dashboard");
     }
 
     private void createUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -65,72 +68,26 @@ public class UserServlet extends HttpServlet {
         String password = request.getParameter("password");
         String role = request.getParameter("role");
 
-        // Input validation
-        if (username == null || username.isEmpty() || email == null || email.isEmpty()
-                || password == null || password.isEmpty() || role == null || role.isEmpty()) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "All fields are required.");
+        if (!isValidInput(username, email, password, role)) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid input");
             return;
         }
-
-        // Check input lengths
-        if (username.length() > 255 || email.length() > 255 || password.length() > 255 || role.length() > 255) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Input length exceeds maximum allowed.");
-            return;
-        }
-
-        // Validate email format
-        if (!EmailValidator.getInstance().isValid(email)) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid email format.");
-            return;
-        }
-
-        // Validate role
-        if (!userService.isValidRole(role)) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid role.");
-            return;
-        }
-
-        // Hash the password
-        String hashedPassword;
-        try {
-            hashedPassword = hashPassword(password);
-        } catch (NoSuchAlgorithmException e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error processing password.");
-            return;
-        }
-
-        User newUser = new User(username, hashedPassword, email, role.toUpperCase());
 
         try {
+            User newUser = new User(username, password, email, role.toUpperCase());
             userService.createUser(newUser);
-        } catch (SQLException e) {
-            if (e.getSQLState().equals("23505")) { // PostgreSQL unique violation error code
-                response.sendError(HttpServletResponse.SC_CONFLICT, "Username or email already exists.");
-            } else {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error creating user.");
-            }
-            return;
+            response.setStatus(HttpServletResponse.SC_CREATED);
+            response.getWriter().write("User created successfully");
+        } catch (Exception e) {
+            logger.severe("Error creating user: " + e.getMessage());
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error creating user");
         }
-
-        response.setStatus(HttpServletResponse.SC_CREATED);
-        response.getWriter().write("User created successfully");
     }
-
-    private String hashPassword(String password) throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        byte[] hashedBytes = md.digest(password.getBytes());
-        StringBuilder sb = new StringBuilder();
-        for (byte b : hashedBytes) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
-    }
-
 
     private void updateUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String idParam = request.getParameter("id");
         if (idParam == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "User ID is required.");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "User ID is required");
             return;
         }
 
@@ -141,13 +98,8 @@ public class UserServlet extends HttpServlet {
             String password = request.getParameter("password");
             String role = request.getParameter("role");
 
-            if (username == null || username.isEmpty() || email == null || email.isEmpty() || role == null || role.isEmpty()) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Username, email, and role cannot be empty.");
-                return;
-            }
-
-            if (!userService.isValidRole(role)) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid role.");
+            if (!isValidInput(username, email, password, role)) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid input");
                 return;
             }
 
@@ -158,38 +110,54 @@ public class UserServlet extends HttpServlet {
                 user.setEmail(email);
                 user.setRole(role.toUpperCase());
                 if (password != null && !password.isEmpty()) {
-                    user.setPassword(hashPassword(password));
+                    user.setPassword(password); // UserService will hash the password
                 }
                 userService.updateUser(user);
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().write("User updated successfully");
             } else {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found.");
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");
             }
         } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid User ID format.");
-        } catch (NoSuchAlgorithmException e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error processing password.");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid User ID format");
+        } catch (Exception e) {
+            logger.severe("Error updating user: " + e.getMessage());
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error updating user");
         }
     }
 
     private void deleteUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String idParam = request.getParameter("id");
         if (idParam == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "User ID is required.");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "User ID is required");
             return;
         }
         try {
             Long id = Long.parseLong(idParam);
-            if (userService.getUserById(id).isPresent()) {
+            Optional<User> userOptional = userService.getUserById(id);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                // First, delete or reassign all tasks associated with this user
+                taskService.reassignOrDeleteTasksForUser(user);
+                // Then, delete the user
                 userService.deleteUser(id);
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().write("User deleted successfully");
             } else {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found.");
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");
             }
         } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid User ID format.");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid User ID format");
+        } catch (Exception e) {
+            logger.severe("Error deleting user: " + e.getMessage());
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error deleting user");
         }
+    }
+
+    private boolean isValidInput(String username, String email, String password, String role) {
+        return username != null && !username.isEmpty() &&
+                email != null && !email.isEmpty() &&
+                role != null && !role.isEmpty() && userService.isValidRole(role) &&
+                (password == null || password.isEmpty() || password.length() >= 8);
     }
 }

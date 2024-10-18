@@ -2,7 +2,10 @@ package org.banta.service;
 
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import org.banta.dao.TaskDAO;
 import org.banta.dao.UserDAO;
+import org.banta.model.Task;
 import org.banta.model.User;
 
 import java.security.MessageDigest;
@@ -86,4 +89,6 @@ public class UserService {
         System.out.println("Stored hashed password: " + storedPassword);
         return hashedInput.equals(storedPassword);
     }
+
+
 }

@@ -2,6 +2,7 @@ package org.banta.service;
 
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import org.banta.dao.TaskDAO;
 import org.banta.model.Task;
 import org.banta.model.User;
@@ -82,8 +83,8 @@ public class TaskService {
         if (task.getDueDate().isBefore(currentDate)) {
             throw new IllegalArgumentException("Task cannot be created in the past");
         }
-        if (task.getDueDate().isAfter(currentDate.plusDays(3))) {
-            throw new IllegalArgumentException("Task cannot be scheduled more than 3 days in advance");
+        if (task.getDueDate().isBefore(currentDate.plusDays(3))) {
+            throw new IllegalArgumentException("Task should be scheduled more than 3 days in advance");
         }
         if (task.getTags().size() < 2) {
             throw new IllegalArgumentException("Task must have at least two tags");
@@ -111,6 +112,19 @@ public class TaskService {
                 throw new IllegalArgumentException("No deletion tokens available");
             }
             // Implement logic to use a deletion token
+        }
+    }
+    @Transactional
+    public void reassignOrDeleteTasksForUser(User user) {
+        List<Task> userTasks = taskDAO.findByUser(user);
+        for (Task task : userTasks) {
+            // Option 1: Delete the task
+            taskDAO.delete(task);
+
+            // Option 2: Reassign the task to a default user or admin
+            // User defaultUser = userDAO.findDefaultUser();
+            // task.setAssignedUser(defaultUser);
+            // taskDAO.update(task);
         }
     }
 }
