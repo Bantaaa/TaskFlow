@@ -20,6 +20,13 @@ public class TaskService {
     @Inject
     private UserService userService;
 
+    public TaskService() {}
+
+
+    public TaskService(TaskDAO taskDAO) {
+        this.taskDAO = taskDAO;
+    }
+
     public void createTask(Task task, User creator) {
         validateTaskCreation(task, creator);
         taskDAO.create(task);
