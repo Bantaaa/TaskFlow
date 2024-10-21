@@ -10,10 +10,11 @@ import jakarta.servlet.http.HttpSession;
 import org.banta.model.User;
 import org.banta.service.UserService;
 import org.banta.service.TaskService;
-
 import java.io.IOException;
-import java.util.Optional;
+import java.util.Arrays;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Optional;
 
 @WebServlet("/user/*")
 public class UserServlet extends HttpServlet {
@@ -28,38 +29,62 @@ public class UserServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User not logged in");
-            return;
-        }
+        logger.info("Received POST request to /user/create");
 
-        User currentUser = (User) session.getAttribute("user");
-        if (!"MANAGER".equals(currentUser.getRole())) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
-            return;
-        }
+        // Log all parameters
+        logger.info("All request parameters:");
+        request.getParameterMap().forEach((key, value) ->
+                logger.info(key + ": " + Arrays.toString(value)));
 
-        String action = request.getPathInfo();
+        String username = request.getParameter("username");
+        String email = request.getParameter("email");
+        String password = request.getParameter("password");
+
+        logger.log(Level.INFO, "Parsed parameters - username: {0}, email: {1}, password: {2}",
+                new Object[]{username, email, password != null ? "****" : null});
+
         try {
-            switch (action) {
-                case "/create":
-                    createUser(request, response);
-                    break;
-                case "/update":
-                    updateUser(request, response);
-                    break;
-                case "/delete":
-                    deleteUser(request, response);
-                    break;
-                default:
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid action");
-                    return;
-            }
+            validateInput(username, email, password);
+
+            User newUser = new User();
+            newUser.setUsername(username);
+            newUser.setEmail(email);
+            newUser.setPassword(password); // Note: In a real application, you should hash the password before storing
+
+            userService.createUser(newUser);
+
+            logger.log(Level.INFO, "User created successfully: {0}", username);
+            response.setContentType("text/plain");
+            response.getWriter().write("User created successfully");
+        } catch (IllegalArgumentException e) {
+            logger.log(Level.WARNING, "Invalid input for user creation: {0}", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setContentType("text/plain");
+            response.getWriter().write("Invalid input: " + e.getMessage());
         } catch (Exception e) {
-            logger.severe("Error processing request: " + e.getMessage());
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred while processing your request");
+            logger.log(Level.SEVERE, "Error occurred while creating user", e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setContentType("text/plain");
+            response.getWriter().write("An error occurred while creating the user");
         }
+    }
+
+    private void validateInput(String username, String email, String password) {
+        if (username == null || username.trim().isEmpty()) {
+            throw new IllegalArgumentException("Username cannot be empty");
+        }
+        if (email == null || email.trim().isEmpty() || !isValidEmail(email)) {
+            throw new IllegalArgumentException("Invalid email address");
+        }
+        if (password == null || password.length() < 6) {
+            throw new IllegalArgumentException("Password must be at least 6 characters long");
+        }
+        // Add any additional validation rules here
+    }
+
+    private boolean isValidEmail(String email) {
+        // This is a simple email validation. For production, consider using a more robust method.
+        return email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
     }
 
     private void createUser(HttpServletRequest request, HttpServletResponse response) throws IOException {

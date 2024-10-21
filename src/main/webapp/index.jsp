@@ -338,6 +338,7 @@
         </main>
     </div>
 </div>
+
 <!-- Create User Modal -->
 <div id="createModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
@@ -596,6 +597,62 @@
         console.log('Task management script loaded');
     }
 
+    document.getElementById('createForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (validateCreateForm()) {
+            const formData = new FormData(this);
+
+            // Log the form data to console for debugging
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
+            }
+
+            fetch('${pageContext.request.contextPath}/user/create', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.text())
+                .then(data => {
+                    console.log('Server response:', data);
+                    if (data.includes('Invalid input')) {
+                        alert('Invalid input: ' + data);
+                    } else {
+                        alert('User created successfully');
+                        closeModal('createModal');
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
+        }
+    });
+
+    function validateCreateForm() {
+        const username = document.getElementById('username').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!username) {
+            alert('Username cannot be empty');
+            return false;
+        }
+        if (!email || !isValidEmail(email)) {
+            alert('Please enter a valid email address');
+            return false;
+        }
+        if (!password || password.length < 6) {
+            alert('Password must be at least 6 characters long');
+            return false;
+        }
+
+        return true;
+    }
+
+    function isValidEmail(email) {
+        return /\S+@\S+\.\S+/.test(email);
+    }
     function handleFormSubmit(e) {
         const formId = e.target.id;
         if (!validateForm(formId)) {
